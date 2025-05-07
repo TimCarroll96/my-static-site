@@ -1,43 +1,142 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Route Tracker</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       background-color: #f4f4f9;
-      text-align: center;
       color: darkgreen;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+      touch-action: manipulation;
     }
+
     .container {
       margin-top: 50px;
+      padding: 0 10px;
     }
+
     button {
       font-size: 18px;
-      padding: 10px 20px;
+      padding: 12px 20px;
       background-color: #ddd;
       border: none;
       cursor: pointer;
       border-radius: 5px;
-      margin: 10px;
+      margin: 10px 0;
+      min-height: 44px;
+      width: 80%;
+      max-width: 300px;
     }
+
     button:hover {
       background-color: #bbb;
     }
+
+    .final-buttons {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .response-buttons {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 20px;
+    }
+
     table {
       width: 80%;
       margin: 20px auto;
       border-collapse: collapse;
     }
+
     th, td {
       padding: 12px;
       text-align: left;
       border: 1px solid #ddd;
     }
+
     th {
       background-color: #f2f2f2;
+    }
+
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.4);
+    }
+
+    .modal-content {
+      background-color: #fff;
+      margin: 30% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 90%;
+      max-width: 400px;
+      border-radius: 10px;
+    }
+
+    .modal-content input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    .modal-content button {
+      margin-top: 10px;
+      width: 100%;
+    }
+
+    /* Dark mode support */
+    @media (prefers-color-scheme: dark) {
+      body {
+        background-color: #121212;
+        color: #d0f0d0;
+      }
+
+      button {
+        background-color: #444;
+        color: white;
+      }
+
+      button:hover {
+        background-color: #666;
+      }
+
+      .modal-content {
+        background-color: #222;
+        color: white;
+        border: 1px solid #444;
+      }
+
+      input {
+        background-color: #333;
+        color: white;
+        border: 1px solid #555;
+      }
+
+      th {
+        background-color: #333;
+      }
+
+      td, th {
+        border-color: #555;
+      }
     }
   </style>
 </head>
@@ -45,11 +144,26 @@
 
   <div class="container">
     <h1>Route Tracker</h1>
-    <div id="mainApp"></div>
+    <div id="mainApp">
+      <button id="begin-button">Begin</button>
+    </div>
+  </div>
+
+  <!-- Modal for Special Notes -->
+  <div id="specialModal" class="modal">
+    <div class="modal-content">
+      <label for="specialNotes">Enter special notes:</label>
+      <input type="text" id="specialNotes" />
+      <button id="submitSpecial">Submit</button>
+    </div>
   </div>
 
   <script>
-    // Full list of addresses and homeowners
+    // Prevent double-tap zoom globally
+    document.addEventListener('dblclick', function (event) {
+      event.preventDefault();
+    }, { passive: false });
+
     const addresses = [
       { address: "205 W Bagley Rd, Berea, OH 44017", homeowner: "Berea WellNow" },
       { address: "22595 Lake Shore Blvd, Euclid, OH 44132", homeowner: "Euclid WellNow" },
@@ -76,26 +190,50 @@
     let currentIndex = 0;
     let logEntries = [];
 
-    // Function to load the current address
+    const mainApp = document.getElementById('mainApp');
+    const beginButton = document.getElementById('begin-button');
+    const specialModal = document.getElementById('specialModal');
+    const specialNotesInput = document.getElementById('specialNotes');
+    const submitSpecial = document.getElementById('submitSpecial');
+
+    beginButton.addEventListener('click', () => {
+      loadEntry();
+    });
+
     function loadEntry() {
       const entry = addresses[currentIndex];
-      document.getElementById('mainApp').innerHTML = `
+      mainApp.innerHTML = `
         <h2>${entry.address}</h2>
         <h3>${entry.homeowner}</h3>
         <p>Cut today?</p>
-        <button onclick="logResponse('Yes')">Yes</button>
-        <button onclick="logResponse('No')">No</button>
-        <button onclick="logResponse('Special')">Special</button>
+        <div class="response-buttons">
+          <button onclick="logResponse('Yes')">Yes</button>
+          <button onclick="logResponse('No')">No</button>
+          <button onclick="logResponse('Special')">Special</button>
+        </div>
       `;
     }
 
-    // Function to log the response
     function logResponse(responseOption) {
       const timestamp = new Date();
       const date = timestamp.toLocaleDateString();
       const time = timestamp.toLocaleTimeString();
-      const specialNotes = responseOption === "Special" ? prompt("Enter special notes:") : '';
 
+      if (responseOption === "Special") {
+        specialNotesInput.value = '';
+        specialModal.style.display = "block";
+
+        submitSpecial.onclick = function () {
+          const specialNotes = specialNotesInput.value;
+          specialModal.style.display = "none";
+          saveLogEntry(date, time, responseOption, specialNotes);
+        };
+      } else {
+        saveLogEntry(date, time, responseOption, '');
+      }
+    }
+
+    function saveLogEntry(date, time, responseOption, specialNotes) {
       const logEntry = {
         address: addresses[currentIndex].address,
         homeowner: addresses[currentIndex].homeowner,
@@ -115,15 +253,16 @@
       }
     }
 
-    // Function to display the "Download" button after all addresses are completed
     function showDownloadButton() {
-      document.getElementById('mainApp').innerHTML = `
+      mainApp.innerHTML = `
         <h2>All addresses completed.</h2>
-        <button onclick="downloadCSV()">Download Log as CSV</button>
+        <div class="final-buttons">
+          <button onclick="downloadCSV()">Download Log as CSV</button>
+          <button onclick="shareLog()">Share Log File</button>
+        </div>
       `;
     }
 
-    // Function to download the log as a CSV file
     function downloadCSV() {
       const headers = ["Address", "Homeowner", "Date", "Time", "Response Option", "Special Notes"];
       const rows = logEntries.map(entry => [
@@ -134,21 +273,59 @@
         entry.responseOption,
         entry.specialNotes || ''
       ]);
-      
+
       let csvContent = "data:text/csv;charset=utf-8," + headers.join(",") + "\n";
       rows.forEach(row => {
-        csvContent += row.join(",") + "\n";
+        csvContent += row.map(item => `"${item}"`).join(",") + "\n";
       });
 
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement("a");
       link.setAttribute("href", encodedUri);
       link.setAttribute("download", "route_log.csv");
+      document.body.appendChild(link);
       link.click();
+      document.body.removeChild(link);
     }
 
-    // Start the first address
-    loadEntry();
+    function createCSVBlob() {
+      const headers = ["Address", "Homeowner", "Date", "Time", "Response Option", "Special Notes"];
+      const rows = logEntries.map(entry => [
+        entry.address,
+        entry.homeowner,
+        entry.date,
+        entry.time,
+        entry.responseOption,
+        entry.specialNotes || ''
+      ]);
+
+      let csvContent = headers.join(",") + "\n";
+      rows.forEach(row => {
+        csvContent += row.join(",") + "\n";
+      });
+
+      return new Blob([csvContent], { type: 'text/csv' });
+    }
+
+    function shareLog() {
+      const csvBlob = createCSVBlob();
+      const file = new File([csvBlob], "route_log.csv", { type: 'text/csv' });
+
+      if (navigator.share && navigator.canShare({ files: [file] })) {
+        navigator.share({
+          title: 'Route Tracker Log',
+          files: [file],
+        })
+        .then(() => {
+          console.log('Log shared successfully');
+        })
+        .catch((error) => {
+          console.error('Error sharing log:', error);
+        });
+      } else {
+        alert('Share functionality is not supported on this device.');
+      }
+    }
   </script>
 </body>
 </html>
