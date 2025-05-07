@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Route Tracker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      text-align: center;
+      color: darkgreen;
+    }
+    .container {
+      margin-top: 50px;
+    }
+    button {
+      font-size: 18px;
+      padding: 10px 20px;
+      background-color: #ddd;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+      margin: 10px;
+    }
+    button:hover {
+      background-color: #bbb;
+    }
+    table {
+      width: 80%;
+      margin: 20px auto;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border: 1px solid #ddd;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Route Tracker</h1>
+    <div id="mainApp"></div>
+  </div>
+
+  <script>
+    // Full list of addresses and homeowners
+    const addresses = [
+      { address: "205 W Bagley Rd, Berea, OH 44017", homeowner: "Berea WellNow" },
+      { address: "22595 Lake Shore Blvd, Euclid, OH 44132", homeowner: "Euclid WellNow" },
+      { address: "27271 Tungsten Rd, Euclid, OH", homeowner: "Masonic Temple" },
+      { address: "742 Hemlock Dr, Euclid, OH 44132", homeowner: "Bobbi Mastri" },
+      { address: "738 Hemlock Dr, Euclid, OH 44132", homeowner: "Antoinette Hudson" },
+      { address: "967 Worden Rd, Wickliffe, OH 44092", homeowner: "Marlene Cameron" },
+      { address: "30396 Lakeland Blvd, Wickliffe, OH", homeowner: "Walt OMCO" },
+      { address: "30851 Harrison Rd, Wickliffe, OH 44092", homeowner: "Mary Bilinski" },
+      { address: "1695 Empire Rd, Wickliffe, OH 44092", homeowner: "Pat Delaney" },
+      { address: "1731 Empire Rd, Wickliffe, OH 44092", homeowner: "Amanda Dennison" },
+      { address: "30295 Twin Lakes Dr, Wickliffe, OH", homeowner: "Mindy Ciappone" },
+      { address: "2605 Timberline Dr, Willoughby Hills, OH 44094", homeowner: "Laurie Feltham" },
+      { address: "35400 Vine Street, Eastlake, OH", homeowner: "Eastlake 2Bucks" },
+      { address: "36540 Valley Vista Dr, Eastlake, OH 44095", homeowner: "Deb Gallagher" },
+      { address: "7138 Connie Dr, Mentor, OH 44060", homeowner: "Johnny Pankuch" },
+      { address: "7406 Jeremy Avenue, Mentor, OH 44060", homeowner: "Josh Mason" },
+      { address: "6006 Andrews Rd, Mentor-On-The-Lake, OH 44060", homeowner: "M-o-L WellNow" },
+      { address: "6484 Elmwood Rd, Mentor, OH", homeowner: "Kristen Mason" },
+      { address: "9620 Omega Court, Mentor, OH", homeowner: "Mark Patterson" },
+      { address: "10730 Pine Valley Circle, Concord Township, OH", homeowner: "Dan 'Lazarescu'" }
+    ];
+
+    let currentIndex = 0;
+    let logEntries = [];
+
+    // Function to load the current address
+    function loadEntry() {
+      const entry = addresses[currentIndex];
+      document.getElementById('mainApp').innerHTML = `
+        <h2>${entry.address}</h2>
+        <h3>${entry.homeowner}</h3>
+        <p>Cut today?</p>
+        <button onclick="logResponse('Yes')">Yes</button>
+        <button onclick="logResponse('No')">No</button>
+        <button onclick="logResponse('Special')">Special</button>
+      `;
+    }
+
+    // Function to log the response
+    function logResponse(responseOption) {
+      const timestamp = new Date();
+      const date = timestamp.toLocaleDateString();
+      const time = timestamp.toLocaleTimeString();
+      const specialNotes = responseOption === "Special" ? prompt("Enter special notes:") : '';
+
+      const logEntry = {
+        address: addresses[currentIndex].address,
+        homeowner: addresses[currentIndex].homeowner,
+        date: date,
+        time: time,
+        responseOption: responseOption,
+        specialNotes: specialNotes
+      };
+
+      logEntries.push(logEntry);
+
+      if (currentIndex < addresses.length - 1) {
+        currentIndex++;
+        loadEntry();
+      } else {
+        showDownloadButton();
+      }
+    }
+
+    // Function to display the "Download" button after all addresses are completed
+    function showDownloadButton() {
+      document.getElementById('mainApp').innerHTML = `
+        <h2>All addresses completed.</h2>
+        <button onclick="downloadCSV()">Download Log as CSV</button>
+      `;
+    }
+
+    // Function to download the log as a CSV file
+    function downloadCSV() {
+      const headers = ["Address", "Homeowner", "Date", "Time", "Response Option", "Special Notes"];
+      const rows = logEntries.map(entry => [
+        entry.address,
+        entry.homeowner,
+        entry.date,
+        entry.time,
+        entry.responseOption,
+        entry.specialNotes || ''
+      ]);
+      
+      let csvContent = "data:text/csv;charset=utf-8," + headers.join(",") + "\n";
+      rows.forEach(row => {
+        csvContent += row.join(",") + "\n";
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "route_log.csv");
+      link.click();
+    }
+
+    // Start the first address
+    loadEntry();
+  </script>
+</body>
+</html>
