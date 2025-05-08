@@ -45,12 +45,6 @@
       margin-bottom: 10px;
     }
 
-    .progress-counter {
-      margin-bottom: 10px;
-      font-weight: bold;
-      font-size: 18px;
-    }
-
     .progress-container {
       width: 100%;
       background-color: #e0e0e0;
@@ -149,7 +143,6 @@
 
   <div class="container">
     <h1>Route Tracker</h1>
-    <div class="progress-counter" id="progressCounter">1/15</div>
     <div class="progress-container">
       <div class="progress-bar" id="progressBar"></div>
     </div>
@@ -207,18 +200,16 @@
     let logEntries = JSON.parse(localStorage.getItem("logEntries")) || [];
 
     const progressBar = document.getElementById("progressBar");
-    const progressCounter = document.getElementById("progressCounter");
     const mainApp = document.getElementById("mainApp");
 
     function updateProgress() {
       const percent = ((currentIndex + 1) / addresses.length) * 100;
       progressBar.style.width = `${percent}%`;
-      progressCounter.textContent = `${currentIndex + 1}/${addresses.length}`;
     }
 
     function loadEntry() {
       const entry = addresses[currentIndex];
-      mainApp.innerHTML = `
+      mainApp.innerHTML = ` 
         <h2>${entry.address}</h2>
         <h3>${entry.homeowner}</h3>
         <div class="final-buttons">
@@ -230,6 +221,10 @@
     }
 
     function openModal(modalId) {
+      // Clear the input fields when the modal is opened
+      if (modalId === 'yesModal') {
+        document.getElementById('extraBilling').value = '';  // Clear the Additional Billing Info
+      }
       document.getElementById(modalId).style.display = "block";
     }
 
@@ -277,7 +272,7 @@
     }
 
     function showDownloadOptions() {
-      mainApp.innerHTML = `
+      mainApp.innerHTML = ` 
         <h2>All addresses completed.</h2>
         <div class="final-buttons">
           <button onclick="downloadCSV()">Download Log as CSV</button>
@@ -321,46 +316,6 @@
 
       localStorage.removeItem("routeIndex");
       localStorage.removeItem("logEntries");
-    }
-
-    function createCSVBlob() {
-      const headers = ["Address", "Homeowner", "Date", "Time", "Response Option", "Special Notes"];
-      const rows = logEntries.map(entry => [
-        entry.address,
-        entry.homeowner,
-        entry.date,
-        entry.time,
-        entry.responseOption,
-        entry.specialNotes
-      ]);
-
-      let csvContent = headers.join(",") + "\n";
-      rows.forEach(row => {
-        csvContent += row.join(",") + "\n";
-      });
-
-      return new Blob([csvContent], { type: 'text/csv' });
-    }
-
-    function shareLog() {
-      const csvBlob = createCSVBlob();
-      const filename = `Route Log ${formatDateForFilename()}.csv`;
-      const file = new File([csvBlob], filename, { type: 'text/csv' });
-
-      if (navigator.share && navigator.canShare({ files: [file] })) {
-        navigator.share({
-          title: 'Route Tracker Log',
-          files: [file],
-        }).then(() => {
-          console.log('Log shared successfully');
-          localStorage.removeItem("routeIndex");
-          localStorage.removeItem("logEntries");
-        }).catch((error) => {
-          console.error('Error sharing log:', error);
-        });
-      } else {
-        alert('Share functionality is not supported on this device.');
-      }
     }
 
     document.getElementById("begin-button").addEventListener("click", loadEntry);
