@@ -104,6 +104,7 @@
       max-width: 400px;
       border-radius: 10px;
       text-align: left;
+      box-sizing: border-box; /* Ensures padding is included in width */
     }
 
     .dark-mode .modal-content {
@@ -111,13 +112,16 @@
       color: white;
     }
 
-    .modal-content input {
+    .modal-content input,
+    .modal-content select {
       width: 100%;
       padding: 12px;
       margin: 10px 0;
       font-size: 16px;
       border-radius: 8px;
       border: 1px solid #ccc;
+      box-sizing: border-box; /* Ensures padding is included in width */
+      max-width: 100%; /* Prevents overflowing */
     }
 
     .modal-buttons {
@@ -157,7 +161,10 @@
       <label>Any Extra Billing Info?</label>
       <input type="text" id="extraBilling" />
       <label>Only Standard Cut?</label>
-      <input type="text" id="standardCut" value="Yes" />
+      <select id="standardCut">
+        <option value="Yes">Yes</option>
+        <option value="No">No</option>
+      </select>
       <div class="modal-buttons">
         <button onclick="submitYes()">✅ Submit</button>
         <button onclick="closeModal('yesModal')">🔙 Back</button>
