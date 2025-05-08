@@ -34,6 +34,22 @@
       margin-bottom: 20px;
     }
 
+    .progress-container {
+      width: 100%;
+      background-color: #e0e0e0;
+      height: 10px;
+      border-radius: 5px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .progress-bar {
+      height: 10px;
+      width: 0%;
+      background-color: #4CAF50;
+      transition: width 0.4s ease;
+    }
+
     button {
       font-size: 24px;
       font-weight: bold;
@@ -121,6 +137,9 @@
 
   <div class="container">
     <h1>Route Tracker</h1>
+    <div class="progress-container">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
     <div id="mainApp">
       <button id="begin-button">Begin</button>
     </div>
@@ -165,6 +184,7 @@
     const specialModal = document.getElementById('specialModal');
     const specialNotesInput = document.getElementById('specialNotes');
     const submitSpecial = document.getElementById('submitSpecial');
+    const progressBar = document.getElementById('progressBar');
 
     beginButton.addEventListener('click', () => {
       loadEntry();
@@ -177,11 +197,14 @@
         <h3>${entry.homeowner}</h3>
         <p>Cut today?</p>
         <div class="final-buttons">
-          <button onclick="logResponse('Yes')">Yes</button>
-          <button onclick="logResponse('No')">No</button>
-          <button onclick="logResponse('Special')">Special</button>
+          <button onclick="logResponse('Yes')">✅ Yes</button>
+          <button onclick="logResponse('No')">❌ No</button>
+          <button onclick="logResponse('Special')">✏️ Special</button>
         </div>
       `;
+
+      const progressPercent = ((currentIndex + 1) / addresses.length) * 100;
+      progressBar.style.width = `${progressPercent}%`;
     }
 
     function logResponse(responseOption) {
