@@ -127,10 +127,11 @@
     }
 
     .modal-buttons {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin-top: 10px;
+      text-align: center;
+    }
+
+    .modal-buttons button {
+      margin: 10px 5px;
     }
 
     @media (max-width: 600px) {
@@ -148,11 +149,9 @@
 
   <div class="container">
     <h1>Route Tracker</h1>
-    <div id="progressCounterWrapper" style="display:none;">
-      <div class="progress-counter" id="progressCounter"></div>
-      <div class="progress-container">
-        <div class="progress-bar" id="progressBar"></div>
-      </div>
+    <div class="progress-counter" id="progressCounter">1/15</div>
+    <div class="progress-container">
+      <div class="progress-bar" id="progressBar"></div>
     </div>
     <div id="mainApp">
       <button id="begin-button">Begin</button>
@@ -189,19 +188,19 @@
     const addresses = [
       { address: "13500 Sperry Rd, Novelty, OH", homeowner: "Caroline Williams" },
       { address: "10730 Pine Valley Circle, Concord Township, OH", homeowner: "Dan" },
-      { address: "7321 Raccoon Hill Dr, Kirtland, OH", homeowner: "Ashish" },
-      { address: "2605 Timberline Dr, Willoughby Hills, OH", homeowner: "Laurie Feltham" },
-      { address: "7406 Jeremy Ave, Mentor, OH", homeowner: "Josh Mason" },
-      { address: "6484 Elmwood Rd, Mentor, OH", homeowner: "Kristen Mason" },
-      { address: "7138 Connie Dr, Mentor, OH", homeowner: "Johny Pankuch" },
-      { address: "35400 Vine St, Eastlake, OH", homeowner: "Two Bucks - Eastlake" },
-      { address: "36540 Valley Vista Dr, Eastlake, OH", homeowner: "Debbie Gallagher" },
-      { address: "1135 Worden Road, Wickliffe, OH", homeowner: "Chas Svec - Worden" },
-      { address: "30396 Lakeland Blvd, Wickliffe, OH", homeowner: "Walt - OMCO" },
-      { address: "30851 Harrison Rd, Wickliffe, OH", homeowner: "Mary Bilinski" },
-      { address: "2142 Rockefeller Rd, Wickliffe, OH", homeowner: "Deborah Foster" },
-      { address: "1695 Empire Rd, Wickliffe, OH", homeowner: "Pat Delaney" },
-      { address: "31208 Bayridge Blvd, Eastlake, OH", homeowner: "Linda/Bill Clemens" }
+      { address: "7321 Raccoon Hill Dr, Kirtland, OH ", homeowner: "Ashish" },
+      { address: "2605 Timberline Dr, Willoughby Hills, OH 44094", homeowner: "Laurie Feltham" },
+      { address: "7406 Jeremy Ave, Mentor, OH 44060", homeowner: "Josh Mason" },
+      { address: "6484 Elmwood Rd, Mentor, OH 44060", homeowner: "Kristen Mason" },
+      { address: "7138 Connie Dr, Mentor, OH 44060", homeowner: "Johny Pankuch" },
+      { address: "35400 Vine St, Eastlake, OH 44095", homeowner: "Two Bucks - Eastlake" },
+      { address: "36540 Valley Vista Dr, Eastlake, OH 44095", homeowner: "Debbie Gallagher" },
+      { address: "1135 Worden Road, Wickliffe, Ohio", homeowner: "Chas Svec - Worden" },
+      { address: "30396 Lakeland Blvd, Wickliffe, OH 44092", homeowner: "Walt - OMCO" },
+      { address: "30851 Harrison Rd, Wickliffe, OH 44092", homeowner: "Mary Bilinski" },
+      { address: "2142 Rockefeller Rd, Wickliffe, OH 44092", homeowner: "Deborah Foster" },
+      { address: "1695 Empire Rd, Wickliffe, OH 44092", homeowner: "Pat Delaney" },
+      { address: "31208 Bayridge Blvd, Eastlake, OH 44095", homeowner: "Linda/Bill Clemens" }
     ];
 
     let currentIndex = parseInt(localStorage.getItem("routeIndex")) || 0;
@@ -209,7 +208,6 @@
 
     const progressBar = document.getElementById("progressBar");
     const progressCounter = document.getElementById("progressCounter");
-    const progressWrapper = document.getElementById("progressCounterWrapper");
     const mainApp = document.getElementById("mainApp");
 
     function updateProgress() {
@@ -228,7 +226,6 @@
           <button onclick="openModal('noModal')">❌ No</button>
         </div>
       `;
-      progressWrapper.style.display = 'block';
       updateProgress();
     }
 
@@ -255,11 +252,14 @@
 
     function saveLogEntry(response, notes) {
       const now = new Date();
+      const date = now.toLocaleDateString();
+      const time = now.toLocaleTimeString();
+
       const entry = {
         address: addresses[currentIndex].address,
         homeowner: addresses[currentIndex].homeowner,
-        date: now.toLocaleDateString(),
-        time: now.toLocaleTimeString(),
+        date,
+        time,
         responseOption: response,
         specialNotes: notes
       };
@@ -277,64 +277,100 @@
     }
 
     function showDownloadOptions() {
-      progressWrapper.style.display = 'none';
       mainApp.innerHTML = `
         <h2>All addresses completed.</h2>
-        <button onclick="downloadCSV()">Download Log as CSV</button>
-        <button onclick="shareLog()">Share Log File</button>
+        <div class="final-buttons">
+          <button onclick="downloadCSV()">Download Log as CSV</button>
+          <button onclick="shareLog()">Share Log File</button>
+        </div>
       `;
     }
 
     function formatDateForFilename() {
       const now = new Date();
-      return `${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}-${String(now.getFullYear()).slice(-2)}`;
+      const mm = String(now.getMonth() + 1).padStart(2, '0');
+      const dd = String(now.getDate()).padStart(2, '0');
+      const yy = String(now.getFullYear()).slice(-2);
+      return `${mm}-${dd}-${yy}`;
     }
 
     function downloadCSV() {
       const headers = ["Address", "Homeowner", "Date", "Time", "Response Option", "Special Notes"];
-      const csvContent = [headers.join(",")].concat(
-        logEntries.map(entry => [entry.address, entry.homeowner, entry.date, entry.time, entry.responseOption, entry.specialNotes].map(e => `"${e}"`).join(","))
-      ).join("\n");
+      const rows = logEntries.map(entry => [
+        entry.address,
+        entry.homeowner,
+        entry.date,
+        entry.time,
+        entry.responseOption,
+        entry.specialNotes
+      ]);
 
+      let csvContent = "data:text/csv;charset=utf-8," + headers.join(",") + "\n";
+      rows.forEach(row => {
+        csvContent += row.map(item => `"${item}"`).join(",") + "\n";
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const filename = `Route Log ${formatDateForFilename()}.csv`;
       const link = document.createElement("a");
-      link.href = "data:text/csv;charset=utf-8," + encodeURIComponent(csvContent);
-      link.download = `Route Log ${formatDateForFilename()}.csv`;
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", filename);
+      document.body.appendChild(link);
       link.click();
+      document.body.removeChild(link);
 
-      clearProgress();
-    }
-
-    function shareLog() {
-      const headers = ["Address", "Homeowner", "Date", "Time", "Response Option", "Special Notes"];
-      const csvContent = [headers.join(",")].concat(
-        logEntries.map(entry => [entry.address, entry.homeowner, entry.date, entry.time, entry.responseOption, entry.specialNotes].join(","))
-      ).join("\n");
-
-      const blob = new Blob([csvContent], { type: 'text/csv' });
-      const file = new File([blob], `Route Log ${formatDateForFilename()}.csv`, { type: 'text/csv' });
-
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        navigator.share({ files: [file], title: 'Route Tracker Log' }).then(clearProgress);
-      } else {
-        alert('Share not supported on this device.');
-      }
-    }
-
-    function clearProgress() {
       localStorage.removeItem("routeIndex");
       localStorage.removeItem("logEntries");
     }
 
-    document.getElementById("begin-button").addEventListener("click", () => {
-      loadEntry();
-    });
+    function createCSVBlob() {
+      const headers = ["Address", "Homeowner", "Date", "Time", "Response Option", "Special Notes"];
+      const rows = logEntries.map(entry => [
+        entry.address,
+        entry.homeowner,
+        entry.date,
+        entry.time,
+        entry.responseOption,
+        entry.specialNotes
+      ]);
 
-    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      let csvContent = headers.join(",") + "\n";
+      rows.forEach(row => {
+        csvContent += row.join(",") + "\n";
+      });
+
+      return new Blob([csvContent], { type: 'text/csv' });
+    }
+
+    function shareLog() {
+      const csvBlob = createCSVBlob();
+      const filename = `Route Log ${formatDateForFilename()}.csv`;
+      const file = new File([csvBlob], filename, { type: 'text/csv' });
+
+      if (navigator.share && navigator.canShare({ files: [file] })) {
+        navigator.share({
+          title: 'Route Tracker Log',
+          files: [file],
+        }).then(() => {
+          console.log('Log shared successfully');
+          localStorage.removeItem("routeIndex");
+          localStorage.removeItem("logEntries");
+        }).catch((error) => {
+          console.error('Error sharing log:', error);
+        });
+      } else {
+        alert('Share functionality is not supported on this device.');
+      }
+    }
+
+    document.getElementById("begin-button").addEventListener("click", loadEntry);
+
+    // Optional dark mode
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
       document.body.classList.add("dark-mode");
     }
 
-    // Auto-resume
-    if (localStorage.getItem("routeIndex") && currentIndex < addresses.length) {
+    if (currentIndex > 0) {
       loadEntry();
     }
   </script>
