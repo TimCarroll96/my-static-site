@@ -232,6 +232,9 @@
       if (modalId === 'yesModal') {
         document.getElementById('extraBilling').value = '';  // Clear the Additional Billing Info
       }
+      if (modalId === 'noModal') {
+        document.getElementById('skipReason').value = '';  // Clear the skip reason
+      }
       document.getElementById(modalId).style.display = "block";
     }
 
