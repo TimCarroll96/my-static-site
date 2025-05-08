@@ -103,6 +103,7 @@
 
     .modal-content {
       background-color: #fff;
+      position: relative;
       margin: 20% auto;
       padding: 20px;
       border: 1px solid #888;
@@ -136,6 +137,15 @@
 
     .modal-buttons button {
       margin: 10px 5px;
+    }
+
+    #modalSubmitBtn {
+      position: absolute;
+      left: 0;
+      right: 0;
+      margin: auto;
+      width: 80%;
+      max-width: 300px;
     }
 
     @media (max-width: 600px) {
@@ -173,7 +183,7 @@
         <option value="No">No</option>
       </select>
       <div class="modal-buttons">
-        <button onclick="submitYes()">✅ Submit</button>
+        <button id="modalSubmitBtn" onclick="submitYes()">✅ Submit</button><br />
         <button onclick="closeModal('yesModal')">🔙 Back</button>
       </div>
     </div>
@@ -229,7 +239,7 @@
         <h2>${entry.address}</h2>
         <h3>${entry.homeowner}</h3>
         <div class="final-buttons">
-          <button onclick="openModal('yesModal')">✅ Yes</button>
+          <button id="yesBtn" onclick="openModal('yesModal')">✅ Yes</button>
           <button onclick="openModal('noModal')">❌ No</button>
         </div>
       `;
@@ -239,11 +249,23 @@
     function openModal(modalId) {
       if (modalId === 'yesModal') {
         document.getElementById('extraBilling').value = '';
+        alignSubmitButton();
       }
       if (modalId === 'noModal') {
         document.getElementById('skipReason').value = '';
       }
       document.getElementById(modalId).style.display = "block";
+    }
+
+    function alignSubmitButton() {
+      const yesBtn = document.getElementById('yesBtn');
+      const modalSubmitBtn = document.getElementById('modalSubmitBtn');
+      if (!yesBtn || !modalSubmitBtn) return;
+
+      const yesRect = yesBtn.getBoundingClientRect();
+      modalSubmitBtn.style.position = 'absolute';
+      modalSubmitBtn.style.top = `${yesRect.top + window.scrollY}px`;
+      modalSubmitBtn.style.left = `${yesRect.left + window.scrollX}px`;
     }
 
     function closeModal(modalId) {
