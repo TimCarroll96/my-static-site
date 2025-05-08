@@ -104,7 +104,7 @@
       max-width: 400px;
       border-radius: 10px;
       text-align: left;
-      box-sizing: border-box; /* Ensures padding is included in width */
+      box-sizing: border-box;
     }
 
     .dark-mode .modal-content {
@@ -120,8 +120,8 @@
       font-size: 16px;
       border-radius: 8px;
       border: 1px solid #ccc;
-      box-sizing: border-box; /* Ensures padding is included in width */
-      max-width: 100%; /* Prevents overflowing */
+      box-sizing: border-box;
+      max-width: 100%;
     }
 
     .modal-buttons {
@@ -228,12 +228,11 @@
     }
 
     function openModal(modalId) {
-      // Clear the input fields when the modal is opened
       if (modalId === 'yesModal') {
-        document.getElementById('extraBilling').value = '';  // Clear the Additional Billing Info
+        document.getElementById('extraBilling').value = '';
       }
       if (modalId === 'noModal') {
-        document.getElementById('skipReason').value = '';  // Clear the skip reason
+        document.getElementById('skipReason').value = '';
       }
       document.getElementById(modalId).style.display = "block";
     }
@@ -328,9 +327,45 @@
       localStorage.removeItem("logEntries");
     }
 
+    function shareLog() {
+      const headers = ["Address", "Homeowner", "Date", "Time", "Response Option", "Special Notes"];
+      const rows = logEntries.map(entry => [
+        entry.address,
+        entry.homeowner,
+        entry.date,
+        entry.time,
+        entry.responseOption,
+        entry.specialNotes
+      ]);
+
+      let csvContent = headers.join(",") + "\n";
+      rows.forEach(row => {
+        csvContent += row.map(item => `"${item}"`).join(",") + "\n";
+      });
+
+      const blob = new Blob([csvContent], { type: "text/csv" });
+      const file = new File([blob], `Route Log ${formatDateForFilename()}.csv`, { type: "text/csv" });
+
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({
+          title: "Route Log",
+          text: "Here is the completed route log.",
+          files: [file]
+        }).then(() => {
+          console.log("Shared successfully");
+          localStorage.removeItem("routeIndex");
+          localStorage.removeItem("logEntries");
+        }).catch((error) => {
+          console.error("Share failed:", error);
+          alert("Sharing failed. Please try downloading instead.");
+        });
+      } else {
+        alert("Sharing not supported on this device. Please download the file instead.");
+      }
+    }
+
     document.getElementById("begin-button").addEventListener("click", loadEntry);
 
-    // Optional dark mode
     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
       document.body.classList.add("dark-mode");
     }
