@@ -45,6 +45,12 @@
       margin-bottom: 10px;
     }
 
+    #routeCounter {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
     .progress-container {
       width: 100%;
       background-color: #e0e0e0;
@@ -147,6 +153,7 @@
 
   <div class="container">
     <h1>Route Tracker</h1>
+    <div id="routeCounter"></div>
     <div class="progress-container">
       <div class="progress-bar" id="progressBar"></div>
     </div>
@@ -208,6 +215,7 @@
 
     const progressBar = document.getElementById("progressBar");
     const mainApp = document.getElementById("mainApp");
+    const routeCounter = document.getElementById("routeCounter");
 
     function updateProgress() {
       const percent = ((currentIndex + 1) / addresses.length) * 100;
@@ -216,6 +224,7 @@
 
     function loadEntry() {
       const entry = addresses[currentIndex];
+      routeCounter.textContent = `${currentIndex + 1} / ${addresses.length}`;
       mainApp.innerHTML = ` 
         <h2>${entry.address}</h2>
         <h3>${entry.homeowner}</h3>
@@ -281,6 +290,7 @@
     }
 
     function showDownloadOptions() {
+      routeCounter.textContent = '';
       mainApp.innerHTML = ` 
         <h2>All addresses completed.</h2>
         <div class="final-buttons">
