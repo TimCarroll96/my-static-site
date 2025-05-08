@@ -16,6 +16,12 @@
       touch-action: manipulation;
       height: 100vh;
       background-size: cover;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .dark-mode {
+      background: linear-gradient(to bottom, #222, #444);
+      color: white;
     }
 
     .container {
@@ -27,11 +33,22 @@
       max-width: 500px;
     }
 
+    .dark-mode .container {
+      background: #333;
+      color: white;
+    }
+
     h1 {
       font-family: 'Roboto', sans-serif;
       font-size: 36px;
       font-weight: bold;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
+    }
+
+    .progress-counter {
+      margin-bottom: 10px;
+      font-weight: bold;
+      font-size: 18px;
     }
 
     .progress-container {
@@ -51,15 +68,15 @@
     }
 
     button {
-      font-size: 24px;
+      font-size: 20px;
       font-weight: bold;
-      padding: 18px 30px;
+      padding: 14px 24px;
       background-color: #4CAF50;
       border: none;
       cursor: pointer;
       border-radius: 10px;
-      margin: 15px 0;
-      min-height: 50px;
+      margin: 10px 0;
+      min-height: 44px;
       width: 80%;
       max-width: 300px;
       color: white;
@@ -70,24 +87,6 @@
     button:hover {
       background-color: #45a049;
       transform: scale(1.05);
-    }
-
-    .final-buttons {
-      margin-top: 30px;
-    }
-
-    .final-buttons button {
-      font-size: 28px;
-      padding: 20px 40px;
-      background-color: #28a745;
-      border: none;
-      border-radius: 8px;
-      color: white;
-      transition: background-color 0.3s ease;
-    }
-
-    .final-buttons button:hover {
-      background-color: #218838;
     }
 
     .modal {
@@ -104,22 +103,34 @@
 
     .modal-content {
       background-color: #fff;
-      margin: 30% auto;
+      margin: 20% auto;
       padding: 20px;
       border: 1px solid #888;
       width: 90%;
       max-width: 400px;
       border-radius: 10px;
+      text-align: left;
+    }
+
+    .dark-mode .modal-content {
+      background-color: #444;
+      color: white;
     }
 
     .modal-content input {
       width: 100%;
       padding: 12px;
-      margin-top: 10px;
+      margin: 10px 0;
       font-size: 16px;
-      box-sizing: border-box;
       border-radius: 8px;
       border: 1px solid #ccc;
+    }
+
+    .modal-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 10px;
     }
 
     @media (max-width: 600px) {
@@ -137,197 +148,194 @@
 
   <div class="container">
     <h1>Route Tracker</h1>
-    <div class="progress-container">
-      <div class="progress-bar" id="progressBar"></div>
+    <div id="progressCounterWrapper" style="display:none;">
+      <div class="progress-counter" id="progressCounter"></div>
+      <div class="progress-container">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
     </div>
     <div id="mainApp">
       <button id="begin-button">Begin</button>
     </div>
   </div>
 
-  <div id="specialModal" class="modal">
+  <!-- Yes Modal -->
+  <div id="yesModal" class="modal">
     <div class="modal-content">
-      <label for="specialNotes">Enter special notes:</label>
-      <input type="text" id="specialNotes" />
-      <button id="submitSpecial">Submit</button>
+      <label>Any Extra Billing Info?</label>
+      <input type="text" id="extraBilling" />
+      <label>Only Standard Cut?</label>
+      <input type="text" id="standardCut" value="Yes" />
+      <div class="modal-buttons">
+        <button onclick="submitYes()">✅ Submit</button>
+        <button onclick="closeModal('yesModal')">🔙 Back</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- No Modal -->
+  <div id="noModal" class="modal">
+    <div class="modal-content">
+      <label>Why was the property skipped?</label>
+      <input type="text" id="skipReason" />
+      <div class="modal-buttons">
+        <button onclick="submitNo()">✅ Submit</button>
+        <button onclick="closeModal('noModal')">🔙 Back</button>
+      </div>
     </div>
   </div>
 
   <script>
-    document.addEventListener('dblclick', function (event) {
-      event.preventDefault();
-    }, { passive: false });
-
     const addresses = [
       { address: "13500 Sperry Rd, Novelty, OH", homeowner: "Caroline Williams" },
       { address: "10730 Pine Valley Circle, Concord Township, OH", homeowner: "Dan" },
-      { address: "7321 Raccoon Hill Dr, Kirtland, OH ", homeowner: "Ashish" },
-      { address: "2605 Timberline Dr, Willoughby Hills, OH 44094", homeowner: "Laurie Feltham" },
-      { address: "7406 Jeremy Ave, Mentor, OH 44060", homeowner: "Josh Mason" },
-      { address: "6484 Elmwood Rd, Mentor, OH 44060", homeowner: "Kristen Mason" },
-      { address: "7138 Connie Dr, Mentor, OH 44060", homeowner: "Johny Pankuch" },
-      { address: "35400 Vine St, Eastlake, OH 44095", homeowner: "Two Bucks - Eastlake" },
-      { address: "36540 Valley Vista Dr, Eastlake, OH 44095", homeowner: "Debbie Gallagher" },
-      { address: "1135 Worden Road, Wickliffe, Ohio", homeowner: "Chas Svec - Worden" },
-      { address: "30396 Lakeland Blvd, Wickliffe, OH 44092", homeowner: "Walt - OMCO" },
-      { address: "30851 Harrison Rd, Wickliffe, OH 44092", homeowner: "Mary Bilinski" },
-      { address: "2142 Rockefeller Rd, Wickliffe, OH 44092", homeowner: "Deborah Foster" },
-      { address: "1695 Empire Rd, Wickliffe, OH 44092", homeowner: "Pat Delaney" },
-      { address: "31208 Bayridge Blvd, Eastlake, OH 44095", homeowner: "Linda/Bill Clemens" }
+      { address: "7321 Raccoon Hill Dr, Kirtland, OH", homeowner: "Ashish" },
+      { address: "2605 Timberline Dr, Willoughby Hills, OH", homeowner: "Laurie Feltham" },
+      { address: "7406 Jeremy Ave, Mentor, OH", homeowner: "Josh Mason" },
+      { address: "6484 Elmwood Rd, Mentor, OH", homeowner: "Kristen Mason" },
+      { address: "7138 Connie Dr, Mentor, OH", homeowner: "Johny Pankuch" },
+      { address: "35400 Vine St, Eastlake, OH", homeowner: "Two Bucks - Eastlake" },
+      { address: "36540 Valley Vista Dr, Eastlake, OH", homeowner: "Debbie Gallagher" },
+      { address: "1135 Worden Road, Wickliffe, OH", homeowner: "Chas Svec - Worden" },
+      { address: "30396 Lakeland Blvd, Wickliffe, OH", homeowner: "Walt - OMCO" },
+      { address: "30851 Harrison Rd, Wickliffe, OH", homeowner: "Mary Bilinski" },
+      { address: "2142 Rockefeller Rd, Wickliffe, OH", homeowner: "Deborah Foster" },
+      { address: "1695 Empire Rd, Wickliffe, OH", homeowner: "Pat Delaney" },
+      { address: "31208 Bayridge Blvd, Eastlake, OH", homeowner: "Linda/Bill Clemens" }
     ];
 
-    let currentIndex = 0;
-    let logEntries = [];
+    let currentIndex = parseInt(localStorage.getItem("routeIndex")) || 0;
+    let logEntries = JSON.parse(localStorage.getItem("logEntries")) || [];
 
-    const mainApp = document.getElementById('mainApp');
-    const beginButton = document.getElementById('begin-button');
-    const specialModal = document.getElementById('specialModal');
-    const specialNotesInput = document.getElementById('specialNotes');
-    const submitSpecial = document.getElementById('submitSpecial');
-    const progressBar = document.getElementById('progressBar');
+    const progressBar = document.getElementById("progressBar");
+    const progressCounter = document.getElementById("progressCounter");
+    const progressWrapper = document.getElementById("progressCounterWrapper");
+    const mainApp = document.getElementById("mainApp");
 
-    beginButton.addEventListener('click', () => {
-      loadEntry();
-    });
+    function updateProgress() {
+      const percent = ((currentIndex + 1) / addresses.length) * 100;
+      progressBar.style.width = `${percent}%`;
+      progressCounter.textContent = `${currentIndex + 1}/${addresses.length}`;
+    }
 
     function loadEntry() {
       const entry = addresses[currentIndex];
       mainApp.innerHTML = `
         <h2>${entry.address}</h2>
         <h3>${entry.homeowner}</h3>
-        <p>Cut today?</p>
         <div class="final-buttons">
-          <button onclick="logResponse('Yes')">✅ Yes</button>
-          <button onclick="logResponse('No')">❌ No</button>
-          <button onclick="logResponse('Special')">✏️ Special</button>
+          <button onclick="openModal('yesModal')">✅ Yes</button>
+          <button onclick="openModal('noModal')">❌ No</button>
         </div>
       `;
-
-      const progressPercent = ((currentIndex + 1) / addresses.length) * 100;
-      progressBar.style.width = `${progressPercent}%`;
+      progressWrapper.style.display = 'block';
+      updateProgress();
     }
 
-    function logResponse(responseOption) {
-      const timestamp = new Date();
-      const date = timestamp.toLocaleDateString();
-      const time = timestamp.toLocaleTimeString();
-
-      if (responseOption === "Special") {
-        specialNotesInput.value = '';
-        specialModal.style.display = "block";
-
-        submitSpecial.onclick = function () {
-          const specialNotes = specialNotesInput.value;
-          specialModal.style.display = "none";
-          saveLogEntry(date, time, responseOption, specialNotes);
-        };
-      } else {
-        saveLogEntry(date, time, responseOption, '');
-      }
+    function openModal(modalId) {
+      document.getElementById(modalId).style.display = "block";
     }
 
-    function saveLogEntry(date, time, responseOption, specialNotes) {
-      const logEntry = {
+    function closeModal(modalId) {
+      document.getElementById(modalId).style.display = "none";
+    }
+
+    function submitYes() {
+      const extra = document.getElementById("extraBilling").value;
+      const standard = document.getElementById("standardCut").value;
+      closeModal("yesModal");
+      saveLogEntry("Yes", `${extra} | Standard Cut: ${standard}`);
+    }
+
+    function submitNo() {
+      const reason = document.getElementById("skipReason").value;
+      closeModal("noModal");
+      saveLogEntry("No", reason);
+    }
+
+    function saveLogEntry(response, notes) {
+      const now = new Date();
+      const entry = {
         address: addresses[currentIndex].address,
         homeowner: addresses[currentIndex].homeowner,
-        date: date,
-        time: time,
-        responseOption: responseOption,
-        specialNotes: specialNotes
+        date: now.toLocaleDateString(),
+        time: now.toLocaleTimeString(),
+        responseOption: response,
+        specialNotes: notes
       };
 
-      logEntries.push(logEntry);
+      logEntries.push(entry);
+      localStorage.setItem("logEntries", JSON.stringify(logEntries));
 
       if (currentIndex < addresses.length - 1) {
         currentIndex++;
+        localStorage.setItem("routeIndex", currentIndex);
         loadEntry();
       } else {
-        showDownloadButton();
+        showDownloadOptions();
       }
     }
 
-    function showDownloadButton() {
+    function showDownloadOptions() {
+      progressWrapper.style.display = 'none';
       mainApp.innerHTML = `
         <h2>All addresses completed.</h2>
-        <div class="final-buttons">
-          <button onclick="downloadCSV()">Download Log as CSV</button>
-          <button onclick="shareLog()">Share Log File</button>
-        </div>
+        <button onclick="downloadCSV()">Download Log as CSV</button>
+        <button onclick="shareLog()">Share Log File</button>
       `;
     }
 
     function formatDateForFilename() {
       const now = new Date();
-      const mm = String(now.getMonth() + 1).padStart(2, '0');
-      const dd = String(now.getDate()).padStart(2, '0');
-      const yy = String(now.getFullYear()).slice(-2);
-      return `${mm}-${dd}-${yy}`;
+      return `${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}-${String(now.getFullYear()).slice(-2)}`;
     }
 
     function downloadCSV() {
       const headers = ["Address", "Homeowner", "Date", "Time", "Response Option", "Special Notes"];
-      const rows = logEntries.map(entry => [
-        entry.address,
-        entry.homeowner,
-        entry.date,
-        entry.time,
-        entry.responseOption,
-        entry.specialNotes || ''
-      ]);
+      const csvContent = [headers.join(",")].concat(
+        logEntries.map(entry => [entry.address, entry.homeowner, entry.date, entry.time, entry.responseOption, entry.specialNotes].map(e => `"${e}"`).join(","))
+      ).join("\n");
 
-      let csvContent = "data:text/csv;charset=utf-8," + headers.join(",") + "\n";
-      rows.forEach(row => {
-        csvContent += row.map(item => `"${item}"`).join(",") + "\n";
-      });
-
-      const encodedUri = encodeURI(csvContent);
-      const filename = `Route Log ${formatDateForFilename()}.csv`;
       const link = document.createElement("a");
-      link.setAttribute("href", encodedUri);
-      link.setAttribute("download", filename);
-      document.body.appendChild(link);
+      link.href = "data:text/csv;charset=utf-8," + encodeURIComponent(csvContent);
+      link.download = `Route Log ${formatDateForFilename()}.csv`;
       link.click();
-      document.body.removeChild(link);
-    }
 
-    function createCSVBlob() {
-      const headers = ["Address", "Homeowner", "Date", "Time", "Response Option", "Special Notes"];
-      const rows = logEntries.map(entry => [
-        entry.address,
-        entry.homeowner,
-        entry.date,
-        entry.time,
-        entry.responseOption,
-        entry.specialNotes || ''
-      ]);
-
-      let csvContent = headers.join(",") + "\n";
-      rows.forEach(row => {
-        csvContent += row.join(",") + "\n";
-      });
-
-      return new Blob([csvContent], { type: 'text/csv' });
+      clearProgress();
     }
 
     function shareLog() {
-      const csvBlob = createCSVBlob();
-      const filename = `Route Log ${formatDateForFilename()}.csv`;
-      const file = new File([csvBlob], filename, { type: 'text/csv' });
+      const headers = ["Address", "Homeowner", "Date", "Time", "Response Option", "Special Notes"];
+      const csvContent = [headers.join(",")].concat(
+        logEntries.map(entry => [entry.address, entry.homeowner, entry.date, entry.time, entry.responseOption, entry.specialNotes].join(","))
+      ).join("\n");
 
-      if (navigator.share && navigator.canShare({ files: [file] })) {
-        navigator.share({
-          title: 'Route Tracker Log',
-          files: [file],
-        })
-        .then(() => {
-          console.log('Log shared successfully');
-        })
-        .catch((error) => {
-          console.error('Error sharing log:', error);
-        });
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const file = new File([blob], `Route Log ${formatDateForFilename()}.csv`, { type: 'text/csv' });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({ files: [file], title: 'Route Tracker Log' }).then(clearProgress);
       } else {
-        alert('Share functionality is not supported on this device.');
+        alert('Share not supported on this device.');
       }
+    }
+
+    function clearProgress() {
+      localStorage.removeItem("routeIndex");
+      localStorage.removeItem("logEntries");
+    }
+
+    document.getElementById("begin-button").addEventListener("click", () => {
+      loadEntry();
+    });
+
+    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      document.body.classList.add("dark-mode");
+    }
+
+    // Auto-resume
+    if (localStorage.getItem("routeIndex") && currentIndex < addresses.length) {
+      loadEntry();
     }
   </script>
 </body>
