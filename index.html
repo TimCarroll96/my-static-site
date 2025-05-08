@@ -8,20 +8,14 @@
   <style>
     body {
       font-family: 'Lato', sans-serif;
-      background: linear-gradient(to bottom, #a8e063, #56ab2f);
-      color: darkgreen;
+      background: linear-gradient(to bottom, #a8e063, #f4e1b1); /* Light green to pastel yellow */
+      color: #333; /* Dark gray text */
       margin: 0;
       padding: 0;
       text-align: center;
       touch-action: manipulation;
       height: 100vh;
       background-size: cover;
-      transition: background 0.3s, color 0.3s;
-    }
-
-    .dark-mode {
-      background: linear-gradient(to bottom, #222, #444);
-      color: white;
     }
 
     .container {
@@ -31,11 +25,6 @@
       border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       max-width: 500px;
-    }
-
-    .dark-mode .container {
-      background: #333;
-      color: white;
     }
 
     h1 {
@@ -71,7 +60,7 @@
       font-size: 20px;
       font-weight: bold;
       padding: 14px 24px;
-      background-color: #4CAF50;
+      background: linear-gradient(to bottom, #4CAF50, #45a049); /* Soft green gradient */
       border: none;
       cursor: pointer;
       border-radius: 10px;
@@ -85,7 +74,7 @@
     }
 
     button:hover {
-      background-color: #45a049;
+      background: linear-gradient(to bottom, #45a049, #4CAF50); /* Reverse on hover */
       transform: scale(1.05);
     }
 
@@ -113,11 +102,6 @@
       box-sizing: border-box;
     }
 
-    .dark-mode .modal-content {
-      background-color: #444;
-      color: white;
-    }
-
     .modal-content input,
     .modal-content select {
       width: 100%;
@@ -127,7 +111,6 @@
       border-radius: 8px;
       border: 1px solid #ccc;
       box-sizing: border-box;
-      max-width: 100%;
     }
 
     .input-error {
@@ -239,7 +222,7 @@
     function loadEntry() {
       const entry = addresses[currentIndex];
       routeCounter.textContent = `${currentIndex + 1} / ${addresses.length}`;
-      mainApp.innerHTML = ` 
+      mainApp.innerHTML = `
         <h2>${entry.address}</h2>
         <h3>${entry.homeowner}</h3>
         <div class="final-buttons">
@@ -251,13 +234,11 @@
     }
 
     function openModal(modalId) {
-      if (modalId === 'yesModal') {
-        document.getElementById('extraBilling').value = '';
-      }
+      if (modalId === 'yesModal') document.getElementById('extraBilling').value = '';
       if (modalId === 'noModal') {
-        const skipInput = document.getElementById('skipReason');
-        skipInput.value = '';
-        skipInput.classList.remove('input-error');
+        const input = document.getElementById('skipReason');
+        input.value = '';
+        input.classList.remove('input-error');
         document.getElementById('skipError').style.display = 'none';
       }
       document.getElementById(modalId).style.display = "block";
@@ -275,46 +256,31 @@
     }
 
     function submitNo() {
-      const reasonInput = document.getElementById("skipReason");
-      const reason = reasonInput.value.trim();
-      const error = document.getElementById("skipError");
-
+      const input = document.getElementById("skipReason");
+      const reason = input.value.trim();
       if (!reason) {
-        reasonInput.classList.add('input-error');
-        error.style.display = "block";
+        input.classList.add('input-error');
+        document.getElementById("skipError").style.display = "block";
         return;
       }
-
-      reasonInput.classList.remove('input-error');
-      error.style.display = "none";
+      input.classList.remove('input-error');
+      document.getElementById("skipError").style.display = "none";
       closeModal("noModal");
       saveLogEntry("No", reason);
     }
 
-    document.getElementById("skipReason").addEventListener("input", function () {
-      if (this.value.trim()) {
-        this.classList.remove('input-error');
-        document.getElementById("skipError").style.display = "none";
-      }
-    });
-
     function saveLogEntry(response, notes) {
       const now = new Date();
-      const date = now.toLocaleDateString();
-      const time = now.toLocaleTimeString();
-
       const entry = {
         address: addresses[currentIndex].address,
         homeowner: addresses[currentIndex].homeowner,
-        date,
-        time,
+        date: now.toLocaleDateString(),
+        time: now.toLocaleTimeString(),
         responseOption: response,
         specialNotes: notes
       };
-
       logEntries.push(entry);
       localStorage.setItem("logEntries", JSON.stringify(logEntries));
-
       if (currentIndex < addresses.length - 1) {
         currentIndex++;
         localStorage.setItem("routeIndex", currentIndex);
@@ -326,98 +292,51 @@
 
     function showDownloadOptions() {
       routeCounter.textContent = '';
-      mainApp.innerHTML = ` 
+      mainApp.innerHTML = `
         <h2>All addresses completed.</h2>
-        <div class="final-buttons">
-          <button onclick="downloadCSV()">⬇️ Download Log</button>
-          <button onclick="shareLog()">📤 Share File</button>
-        </div>
+        <button onclick="downloadCSV()">⬇️ Download Log</button>
+        <button onclick="shareLog()">📤 Share File</button>
       `;
     }
 
     function formatDateForFilename() {
       const now = new Date();
-      const mm = String(now.getMonth() + 1).padStart(2, '0');
-      const dd = String(now.getDate()).padStart(2, '0');
-      const yy = String(now.getFullYear()).slice(-2);
-      return `${mm}-${dd}-${yy}`;
+      return `${String(now.getMonth()+1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}-${String(now.getFullYear()).slice(-2)}`;
     }
 
     function downloadCSV() {
       const headers = ["Address", "Homeowner", "Date", "Time", "Response Option", "Special Notes"];
-      const rows = logEntries.map(entry => [
-        entry.address,
-        entry.homeowner,
-        entry.date,
-        entry.time,
-        entry.responseOption,
-        entry.specialNotes
-      ]);
+      const csv = [headers.join(",")].concat(
+        logEntries.map(entry => headers.map(h => `"${entry[h.toLowerCase().replace(/ /g, "")] || ''}"`).join(","))
+      ).join("\n");
 
-      let csvContent = "data:text/csv;charset=utf-8," + headers.join(",") + "\n";
-      rows.forEach(row => {
-        csvContent += row.map(item => `"${item}"`).join(",") + "\n";
-      });
-
-      const encodedUri = encodeURI(csvContent);
-      const filename = `Route Log ${formatDateForFilename()}.csv`;
       const link = document.createElement("a");
-      link.setAttribute("href", encodedUri);
-      link.setAttribute("download", filename);
+      link.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+      link.download = `Route Log ${formatDateForFilename()}.csv`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-
-      localStorage.removeItem("routeIndex");
-      localStorage.removeItem("logEntries");
+      localStorage.clear();
     }
 
     function shareLog() {
       const headers = ["Address", "Homeowner", "Date", "Time", "Response Option", "Special Notes"];
-      const rows = logEntries.map(entry => [
-        entry.address,
-        entry.homeowner,
-        entry.date,
-        entry.time,
-        entry.responseOption,
-        entry.specialNotes
-      ]);
+      const csv = [headers.join(",")].concat(
+        logEntries.map(entry => headers.map(h => `"${entry[h.toLowerCase().replace(/ /g, "")] || ''}"`).join(","))
+      ).join("\n");
+      const file = new File([csv], `Route Log ${formatDateForFilename()}.csv`, { type: "text/csv" });
 
-      let csvContent = headers.join(",") + "\n";
-      rows.forEach(row => {
-        csvContent += row.map(item => `"${item}"`).join(",") + "\n";
-      });
-
-      const blob = new Blob([csvContent], { type: "text/csv" });
-      const file = new File([blob], `Route Log ${formatDateForFilename()}.csv`, { type: "text/csv" });
-
-      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-        navigator.share({
-          title: "Route Log",
-          text: "Here is the completed route log.",
-          files: [file]
-        }).then(() => {
-          console.log("Shared successfully");
-          localStorage.removeItem("routeIndex");
-          localStorage.removeItem("logEntries");
-        }).catch((error) => {
-          console.error("Share failed:", error);
-          alert("Sharing failed. Please try downloading instead.");
-        });
+      if (navigator.share && navigator.canShare({ files: [file] })) {
+        navigator.share({ title: "Route Log", text: "Completed route log.", files: [file] })
+          .then(() => localStorage.clear())
+          .catch(err => alert("Share failed: " + err));
       } else {
-        alert("Sharing not supported on this device. Please download the file instead.");
+        alert("Sharing not supported on this device.");
       }
     }
 
-    document.getElementById("begin-button").addEventListener("click", loadEntry);
-
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      document.body.classList.add("dark-mode");
-    }
-
-    if (currentIndex > 0) {
-      loadEntry();
-    }
+    loadEntry();
   </script>
+
 </body>
 </html>
