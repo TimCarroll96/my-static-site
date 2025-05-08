@@ -130,6 +130,18 @@
       max-width: 100%;
     }
 
+    .input-error {
+      border-color: red;
+    }
+
+    .error-message {
+      color: red;
+      font-size: 14px;
+      margin-top: -5px;
+      margin-bottom: 10px;
+      display: none;
+    }
+
     .modal-buttons {
       text-align: center;
     }
@@ -184,6 +196,7 @@
     <div class="modal-content">
       <label>Why was the property skipped?</label>
       <input type="text" id="skipReason" />
+      <div id="skipError" class="error-message">This field is required.</div>
       <div class="modal-buttons">
         <button onclick="submitNo()">✅ Submit</button>
         <button onclick="closeModal('noModal')">🔙 Back</button>
@@ -242,7 +255,10 @@
         document.getElementById('extraBilling').value = '';
       }
       if (modalId === 'noModal') {
-        document.getElementById('skipReason').value = '';
+        const skipInput = document.getElementById('skipReason');
+        skipInput.value = '';
+        skipInput.classList.remove('input-error');
+        document.getElementById('skipError').style.display = 'none';
       }
       document.getElementById(modalId).style.display = "block";
     }
@@ -259,10 +275,28 @@
     }
 
     function submitNo() {
-      const reason = document.getElementById("skipReason").value;
+      const reasonInput = document.getElementById("skipReason");
+      const reason = reasonInput.value.trim();
+      const error = document.getElementById("skipError");
+
+      if (!reason) {
+        reasonInput.classList.add('input-error');
+        error.style.display = "block";
+        return;
+      }
+
+      reasonInput.classList.remove('input-error');
+      error.style.display = "none";
       closeModal("noModal");
       saveLogEntry("No", reason);
     }
+
+    document.getElementById("skipReason").addEventListener("input", function () {
+      if (this.value.trim()) {
+        this.classList.remove('input-error');
+        document.getElementById("skipError").style.display = "none";
+      }
+    });
 
     function saveLogEntry(response, notes) {
       const now = new Date();
@@ -387,3 +421,4 @@
   </script>
 </body>
 </html>
+
