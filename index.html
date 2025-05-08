@@ -4,73 +4,72 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Route Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&family=Lato:wght@300&display=swap" rel="stylesheet"> <!-- Google Fonts -->
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f9;
+      font-family: 'Lato', sans-serif;
+      background: linear-gradient(to bottom, #a8e063, #56ab2f);
       color: darkgreen;
       margin: 0;
       padding: 0;
       text-align: center;
       touch-action: manipulation;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
     }
 
     .container {
-      margin-top: 50px;
-      padding: 0 10px;
-      flex-grow: 1;
+      margin: 30px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Soft shadow */
+      max-width: 500px;
+    }
+
+    h1 {
+      font-family: 'Roboto', sans-serif;
+      font-size: 36px;
+      font-weight: bold;
+      margin-bottom: 20px;
     }
 
     button {
-      font-size: 24px; /* Larger text */
-      font-weight: bold; /* Bold text */
+      font-size: 24px;
+      font-weight: bold;
       padding: 18px 30px;
-      background-color: #ddd;
+      background-color: #4CAF50; /* Brighter green */
       border: none;
       cursor: pointer;
-      border-radius: 5px;
+      border-radius: 10px; /* Rounded corners */
       margin: 15px 0;
       min-height: 50px;
       width: 80%;
       max-width: 300px;
-      color: #333; /* Darker text color */
+      color: white;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Light shadow */
+      transition: transform 0.2s ease, background-color 0.3s;
     }
 
     button:hover {
-      background-color: #bbb;
+      background-color: #45a049; /* Slightly darker green */
+      transform: scale(1.05); /* Slight zoom effect on hover */
     }
 
     .final-buttons {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      margin-top: 30px;
     }
 
-    .response-buttons {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-top: 20px;
+    .final-buttons button {
+      font-size: 28px;
+      padding: 20px 40px;
+      background-color: #28a745; /* Green color for success */
+      border: none;
+      border-radius: 8px;
+      color: white;
+      transition: background-color 0.3s ease;
     }
 
-    table {
-      width: 80%;
-      margin: 20px auto;
-      border-collapse: collapse;
-    }
-
-    th, td {
-      padding: 12px;
-      text-align: left;
-      border: 1px solid #ddd;
-    }
-
-    th {
-      background-color: #f2f2f2;
+    .final-buttons button:hover {
+      background-color: #218838;
     }
 
     /* Modal styles */
@@ -83,12 +82,11 @@
       width: 100%;
       height: 100%;
       overflow: auto;
-      background-color: rgba(0, 0, 0, 0.7); /* Darker background */
+      background-color: rgba(0, 0, 0, 0.8); /* Darker background */
     }
 
     .modal-content {
-      background-color: #333; /* Darker modal */
-      color: white;
+      background-color: #fff;
       margin: 30% auto;
       padding: 20px;
       border: 1px solid #888;
@@ -99,67 +97,25 @@
 
     .modal-content input {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       margin-top: 10px;
       font-size: 16px;
       box-sizing: border-box;
+      border-radius: 8px;
+      border: 1px solid #ccc;
     }
 
-    .modal-content button {
-      margin-top: 10px;
-      width: 100%;
-      background-color: #444;
-      color: white;
-    }
-
-    /* Dark mode support */
-    @media (prefers-color-scheme: dark) {
-      body {
-        background-color: #121212;
-        color: #d0f0d0;
-      }
-
+    /* Mobile responsiveness */
+    @media (max-width: 600px) {
       button {
-        background-color: #444;
-        color: white;
+        width: 90%; /* Full width on mobile */
       }
 
-      button:hover {
-        background-color: #666;
-      }
-
-      .modal-content {
-        background-color: #222;
-        color: white;
-        border: 1px solid #444;
-      }
-
-      input {
-        background-color: #333;
-        color: white;
-        border: 1px solid #555;
-      }
-
-      th {
-        background-color: #333;
-      }
-
-      td, th {
-        border-color: #555;
+      .container {
+        padding: 15px;
       }
     }
 
-    /* Fixed buttons at the bottom */
-    .fixed-buttons {
-      position: fixed;
-      bottom: 20px;
-      left: 0;
-      right: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 10px;
-    }
   </style>
 </head>
 <body>
@@ -177,15 +133,6 @@
       <label for="specialNotes">Enter special notes:</label>
       <input type="text" id="specialNotes" />
       <button id="submitSpecial">Submit</button>
-    </div>
-  </div>
-
-  <!-- Fixed Buttons for Yes, No, Special (Initially hidden) -->
-  <div class="fixed-buttons" id="responseButtons" style="display: none;">
-    <div class="response-buttons">
-      <button onclick="logResponse('Yes')">Yes</button>
-      <button onclick="logResponse('No')">No</button>
-      <button onclick="logResponse('Special')">Special</button>
     </div>
   </div>
 
@@ -226,11 +173,9 @@
     const specialModal = document.getElementById('specialModal');
     const specialNotesInput = document.getElementById('specialNotes');
     const submitSpecial = document.getElementById('submitSpecial');
-    const responseButtons = document.getElementById('responseButtons');
 
     beginButton.addEventListener('click', () => {
       loadEntry();
-      responseButtons.style.display = 'block';  // Show the Yes, No, Special buttons after Begin
     });
 
     function loadEntry() {
@@ -239,6 +184,11 @@
         <h2>${entry.address}</h2>
         <h3>${entry.homeowner}</h3>
         <p>Cut today?</p>
+        <div class="final-buttons">
+          <button onclick="logResponse('Yes')">Yes</button>
+          <button onclick="logResponse('No')">No</button>
+          <button onclick="logResponse('Special')">Special</button>
+        </div>
       `;
     }
 
@@ -289,7 +239,6 @@
           <button onclick="shareLog()">Share Log File</button>
         </div>
       `;
-      responseButtons.style.display = 'none'; // Hide response buttons on the final page
     }
 
     function downloadCSV() {
