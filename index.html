@@ -26,15 +26,15 @@
     }
 
     button {
-      font-size: 20px; /* Larger text */
+      font-size: 24px; /* Larger text */
       font-weight: bold; /* Bold text */
-      padding: 14px 24px;
+      padding: 18px 30px;
       background-color: #ddd;
       border: none;
       cursor: pointer;
       border-radius: 5px;
-      margin: 10px 0;
-      min-height: 44px;
+      margin: 15px 0;
+      min-height: 50px;
       width: 80%;
       max-width: 300px;
       color: #333; /* Darker text color */
@@ -180,8 +180,8 @@
     </div>
   </div>
 
-  <!-- Fixed Buttons for Yes, No, Special -->
-  <div class="fixed-buttons">
+  <!-- Fixed Buttons for Yes, No, Special (Initially hidden) -->
+  <div class="fixed-buttons" id="responseButtons" style="display: none;">
     <div class="response-buttons">
       <button onclick="logResponse('Yes')">Yes</button>
       <button onclick="logResponse('No')">No</button>
@@ -226,9 +226,11 @@
     const specialModal = document.getElementById('specialModal');
     const specialNotesInput = document.getElementById('specialNotes');
     const submitSpecial = document.getElementById('submitSpecial');
+    const responseButtons = document.getElementById('responseButtons');
 
     beginButton.addEventListener('click', () => {
       loadEntry();
+      responseButtons.style.display = 'block';  // Show the Yes, No, Special buttons after Begin
     });
 
     function loadEntry() {
