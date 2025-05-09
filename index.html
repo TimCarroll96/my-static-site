@@ -304,36 +304,59 @@
       return `${String(now.getMonth()+1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}-${String(now.getFullYear()).slice(-2)}`;
     }
 
-    function downloadCSV() {
-      const headers = ["Address", "Homeowner", "Date", "Time", "Response Option", "Special Notes"];
-      const csv = [headers.join(",")].concat(
-        logEntries.map(entry => headers.map(h => `"${entry[h.toLowerCase().replace(/ /g, "")] || ''}"`).join(","))
-      ).join("\n");
+function downloadCSV() {
+  const headers = ["Address", "Homeowner", "Date", "Time", "Response Option", "Special Notes"];
+  const csvRows = [
+    headers.join(","),
+    ...logEntries.map(entry =>
+      [
+        `"${entry.address}"`,
+        `"${entry.homeowner}"`,
+        `"${entry.date}"`,
+        `"${entry.time}"`,
+        `"${entry.responseOption}"`,
+        `"${entry.specialNotes}"`
+      ].join(",")
+    )
+  ];
 
-      const link = document.createElement("a");
-      link.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
-      link.download = `Route Log ${formatDateForFilename()}.csv`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      localStorage.clear();
-    }
+  const csv = csvRows.join("\n");
+  const link = document.createElement("a");
+  link.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  link.download = `Route Log ${formatDateForFilename()}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  localStorage.clear();
+}
 
-    function shareLog() {
-      const headers = ["Address", "Homeowner", "Date", "Time", "Response Option", "Special Notes"];
-      const csv = [headers.join(",")].concat(
-        logEntries.map(entry => headers.map(h => `"${entry[h.toLowerCase().replace(/ /g, "")] || ''}"`).join(","))
-      ).join("\n");
-      const file = new File([csv], `Route Log ${formatDateForFilename()}.csv`, { type: "text/csv" });
+function shareLog() {
+  const headers = ["Address", "Homeowner", "Date", "Time", "Response Option", "Special Notes"];
+  const csvRows = [
+    headers.join(","),
+    ...logEntries.map(entry =>
+      [
+        `"${entry.address}"`,
+        `"${entry.homeowner}"`,
+        `"${entry.date}"`,
+        `"${entry.time}"`,
+        `"${entry.responseOption}"`,
+        `"${entry.specialNotes}"`
+      ].join(",")
+    )
+  ];
 
-      if (navigator.share && navigator.canShare({ files: [file] })) {
-        navigator.share({ title: "Route Log", text: "Completed route log.", files: [file] })
-          .then(() => localStorage.clear())
-          .catch(err => alert("Share failed: " + err));
-      } else {
-        alert("Sharing not supported on this device.");
-      }
-    }
+  const csv = csvRows.join("\n");
+  const file = new File([csv], `Route Log ${formatDateForFilename()}.csv`, { type: "text/csv" });
+
+  if (navigator.share && navigator.canShare({ files: [file] })) {
+    navigator.share({ title: "Route Log", text: "Completed route log.", files: [file] })
+      .then(() => localStorage.clear())
+      .catch(err => alert("Share failed: " + err));
+  } else {
+    alert("Sharing not supported on this device.");
+  }
+}
 
     loadEntry();
   </script>
