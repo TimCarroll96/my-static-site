@@ -16,6 +16,7 @@
       touch-action: manipulation;
       height: 100vh;
       background-size: cover;
+      transition: filter 0.3s ease;
     }
 
     .container {
@@ -88,6 +89,7 @@
       height: 100%;
       overflow: auto;
       background-color: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(10px); /* This adds the blur effect to the background */
     }
 
     .modal-content {
@@ -263,7 +265,13 @@
   </div>
 
   <script>
-    const addresses = [
+    function triggerHapticFeedback() {
+      if (navigator.vibrate) {
+        navigator.vibrate(50); // 50ms vibration for feedback
+      }
+    }
+
+    const addresses = [ 
       { address: "30396 Lakeland Blvd, Wickliffe, OH 44092", homeowner: "Walt - OMCO" },
       { address: "1135 Worden Road, Wickliffe, OH 44092", homeowner: "Chas Svec - Worden" },
       { address: "30851 Harrison Rd, Wickliffe, OH 44092", homeowner: "Mary Bilinski" },
@@ -280,7 +288,7 @@
       { address: "2605 Timberline Dr, Willoughby Hills, OH 44094", homeowner: "Laurie Feltham" },
       { address: "10730 Pine Valley Circle, Concord, OH 44077", homeowner: "Dan Cash" },
       { address: "13500 Sperry Rd, Novelty, OH 44072", homeowner: "Caroline Williams" }
-    ];
+                      ];
 
     let currentIndex = parseInt(localStorage.getItem("routeIndex")) || 0;
     let logEntries = JSON.parse(localStorage.getItem("logEntries")) || [];
@@ -291,21 +299,14 @@
     }
 
     function loadEntry() {
-      // Reset extras
-      document.querySelectorAll('#yesModal .checkbox-group input[type="checkbox"]').forEach(cb => {
-        cb.checked = false;
-        cb.closest('.checkbox-card')?.classList.remove('checked');
-      });
-      document.getElementById("standardCut").selectedIndex = 0;
-
       const entry = addresses[currentIndex];
       document.getElementById("routeCounter").textContent = `${currentIndex + 1} / ${addresses.length}`;
       document.getElementById("mainApp").innerHTML = `
         <h2>${entry.address}</h2>
         <h3>${entry.homeowner}</h3>
         <div class="final-buttons">
-          <button onclick="openModal('yesModal')">✅ Yes</button>
-          <button onclick="openModal('noModal')">❌ No</button>
+          <button onclick="openModal('yesModal'); triggerHapticFeedback()">✅ Yes</button>
+          <button onclick="openModal('noModal'); triggerHapticFeedback()">❌ No</button>
         </div>
       `;
       updateProgress();
