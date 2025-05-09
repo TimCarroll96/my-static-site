@@ -8,8 +8,8 @@
   <style>
     body {
       font-family: 'Lato', sans-serif;
-      background: linear-gradient(to bottom, #a8e063, #f4e1b1); /* Light green to pastel yellow */
-      color: #333; /* Dark gray text */
+      background: linear-gradient(to bottom, #a8e063, #f4e1b1);
+      color: #333;
       margin: 0;
       padding: 0;
       text-align: center;
@@ -60,7 +60,7 @@
       font-size: 20px;
       font-weight: bold;
       padding: 14px 24px;
-      background: linear-gradient(to bottom, #4CAF50, #45a049); /* Soft green gradient */
+      background: linear-gradient(to bottom, #4CAF50, #45a049);
       border: none;
       cursor: pointer;
       border-radius: 10px;
@@ -74,7 +74,7 @@
     }
 
     button:hover {
-      background: linear-gradient(to bottom, #45a049, #4CAF50); /* Reverse on hover */
+      background: linear-gradient(to bottom, #45a049, #4CAF50);
       transform: scale(1.05);
     }
 
@@ -113,6 +113,26 @@
       box-sizing: border-box;
     }
 
+    .modal-content label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    .checkbox-group {
+      display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 15px;
+  text-align: left;
+    }
+
+    .checkbox-group label {
+      font-weight: normal;
+      margin: 0;
+      width: 45%; /* Ensure they align in two columns */
+    }
+
     .input-error {
       border-color: red;
     }
@@ -145,7 +165,7 @@
   </style>
 </head>
 <body>
-
+  
   <div class="container">
     <h1>Route Tracker</h1>
     <div id="routeCounter"></div>
@@ -161,11 +181,19 @@
   <div id="yesModal" class="modal">
     <div class="modal-content">
       <label>Any Extra Billing Info?</label>
-      <input type="text" id="extraBilling" />
-      <label>Only Standard Cut?</label>
+      <div class="checkbox-group">
+        <label><input type="checkbox" value="Weed Control" /> Weed Control</label>
+        <label><input type="checkbox" value="Mulch" /> Mulch</label>
+        <label><input type="checkbox" value="Fertilizer" /> Fertilizer</label>
+        <label><input type="checkbox" value="Pest Control" /> Pest Control</label>
+        <label><input type="checkbox" value="Shrub Trimming" /> Shrub Trimming</label>
+        <label><input type="checkbox" value="Yard Clean Up" /> Yard Clean Up</label>
+      </div>
+      <label>What multiple of cut was provided?</label>
       <select id="standardCut">
-        <option value="Yes">Yes</option>
-        <option value="No">No</option>
+        <option value="1.0" selected>1.0</option>
+        <option value="1.5">1.5</option>
+        <option value="2">2</option>
       </select>
       <div class="modal-buttons">
         <button onclick="submitYes()">✅ Submit</button>
@@ -189,40 +217,36 @@
 
   <script>
     const addresses = [
-    { address: "30396 Lakeland Blvd, Wickliffe, OH 44092", homeowner: "Walt - OMCO" },
-{ address: "1135 Worden Road, Wickliffe, OH 44092", homeowner: "Chas Svec - Worden" },
-{ address: "30851 Harrison Rd, Wickliffe, OH 44092", homeowner: "Mary Bilinski" },
-{ address: "738 Sterling Rd, Wickliffe, OH 44092", homeowner: "Adam Burr" },
-{ address: "739 Sterling Rd, Wickliffe, OH 44092", homeowner: "Don Testa" },
-{ address: "2142 Rockefeller Rd, Wickliffe, OH 44092", homeowner: "Deborah Foster" },
-{ address: "1695 Empire Rd, Wickliffe, OH 44092", homeowner: "Pat Delaney" },
-{ address: "1813 East 290th St, Wickliffe, OH 44092", homeowner: "Linda/Bill Clemens" },
-{ address: "35400 Vine St, Eastlake, OH 44095", homeowner: "Two Bucks - Eastlake" },
-{ address: "7406 Jeremy Ave, Mentor, OH 44060", homeowner: "Josh Mason" },
-{ address: "6484 Elmwood Rd, Mentor, OH 44060", homeowner: "Kristen Mason" },
-{ address: "7138 Connie Dr, Mentor, OH 44060", homeowner: "Johnny Pankuch" },
-{ address: "7321 Raccoon Hill Dr, Kirtland, OH 44094", homeowner: "Ashish" },
-{ address: "2605 Timberline Dr, Willoughby Hills, OH 44094", homeowner: "Laurie Feltham" },
-{ address: "10730 Pine Valley Circle, Concord, OH 44077", homeowner: "Dan Cash" },
-{ address: "13500 Sperry Rd, Novelty, OH 44072", homeowner: "Caroline Williams" }
+      { address: "30396 Lakeland Blvd, Wickliffe, OH 44092", homeowner: "Walt - OMCO" },
+      { address: "1135 Worden Road, Wickliffe, OH 44092", homeowner: "Chas Svec - Worden" },
+      { address: "30851 Harrison Rd, Wickliffe, OH 44092", homeowner: "Mary Bilinski" },
+      { address: "738 Sterling Rd, Wickliffe, OH 44092", homeowner: "Adam Burr" },
+      { address: "739 Sterling Rd, Wickliffe, OH 44092", homeowner: "Don Testa" },
+      { address: "2142 Rockefeller Rd, Wickliffe, OH 44092", homeowner: "Deborah Foster" },
+      { address: "1695 Empire Rd, Wickliffe, OH 44092", homeowner: "Pat Delaney" },
+      { address: "1813 East 290th St, Wickliffe, OH 44092", homeowner: "Linda/Bill Clemens" },
+      { address: "35400 Vine St, Eastlake, OH 44095", homeowner: "Two Bucks - Eastlake" },
+      { address: "7406 Jeremy Ave, Mentor, OH 44060", homeowner: "Josh Mason" },
+      { address: "6484 Elmwood Rd, Mentor, OH 44060", homeowner: "Kristen Mason" },
+      { address: "7138 Connie Dr, Mentor, OH 44060", homeowner: "Johnny Pankuch" },
+      { address: "7321 Raccoon Hill Dr, Kirtland, OH 44094", homeowner: "Ashish" },
+      { address: "2605 Timberline Dr, Willoughby Hills, OH 44094", homeowner: "Laurie Feltham" },
+      { address: "10730 Pine Valley Circle, Concord, OH 44077", homeowner: "Dan Cash" },
+      { address: "13500 Sperry Rd, Novelty, OH 44072", homeowner: "Caroline Williams" }
     ];
 
     let currentIndex = parseInt(localStorage.getItem("routeIndex")) || 0;
     let logEntries = JSON.parse(localStorage.getItem("logEntries")) || [];
 
-    const progressBar = document.getElementById("progressBar");
-    const mainApp = document.getElementById("mainApp");
-    const routeCounter = document.getElementById("routeCounter");
-
     function updateProgress() {
       const percent = ((currentIndex + 1) / addresses.length) * 100;
-      progressBar.style.width = `${percent}%`;
+      document.getElementById("progressBar").style.width = percent + "%";
     }
 
     function loadEntry() {
       const entry = addresses[currentIndex];
-      routeCounter.textContent = `${currentIndex + 1} / ${addresses.length}`;
-      mainApp.innerHTML = `
+      document.getElementById("routeCounter").textContent = `${currentIndex + 1} / ${addresses.length}`;
+      document.getElementById("mainApp").innerHTML = `
         <h2>${entry.address}</h2>
         <h3>${entry.homeowner}</h3>
         <div class="final-buttons">
@@ -234,7 +258,6 @@
     }
 
     function openModal(modalId) {
-      if (modalId === 'yesModal') document.getElementById('extraBilling').value = '';
       if (modalId === 'noModal') {
         const input = document.getElementById('skipReason');
         input.value = '';
@@ -248,12 +271,22 @@
       document.getElementById(modalId).style.display = "none";
     }
 
-    function submitYes() {
-      const extra = document.getElementById("extraBilling").value;
-      const standard = document.getElementById("standardCut").value;
-      closeModal("yesModal");
-      saveLogEntry("Yes", `${extra} | Standard Cut: ${standard}`);
-    }
+  function submitYes() {
+  const checkboxes = document.querySelectorAll('#yesModal .checkbox-group input[type="checkbox"]');
+  const extras = {};
+  checkboxes.forEach(cb => {
+    extras[cb.value] = cb.checked;
+    cb.checked = false; // reset after submit
+  });
+
+  const cutMultiple = document.getElementById("standardCut");
+  const cutValue = cutMultiple.value;
+  cutMultiple.selectedIndex = 0; // reset after submit
+
+  closeModal("yesModal");
+  saveLogEntry("Yes", { extras, cutMultiple: cutValue });
+}
+
 
     function submitNo() {
       const input = document.getElementById("skipReason");
@@ -263,36 +296,38 @@
         document.getElementById("skipError").style.display = "block";
         return;
       }
-      input.classList.remove('input-error');
-      document.getElementById("skipError").style.display = "none";
       closeModal("noModal");
       saveLogEntry("No", reason);
     }
 
-    function saveLogEntry(response, notes) {
-      const now = new Date();
-      const entry = {
-        address: addresses[currentIndex].address,
-        homeowner: addresses[currentIndex].homeowner,
-        date: now.toLocaleDateString(),
-        time: now.toLocaleTimeString(),
-        responseOption: response,
-        specialNotes: notes
-      };
-      logEntries.push(entry);
-      localStorage.setItem("logEntries", JSON.stringify(logEntries));
-      if (currentIndex < addresses.length - 1) {
-        currentIndex++;
-        localStorage.setItem("routeIndex", currentIndex);
-        loadEntry();
-      } else {
-        showDownloadOptions();
-      }
-    }
+    function saveLogEntry(response, notesObj) {
+  const now = new Date();
+  const entry = {
+    address: addresses[currentIndex].address,
+    homeowner: addresses[currentIndex].homeowner,
+    date: now.toLocaleDateString(),
+    time: now.toLocaleTimeString(),
+    responseOption: response,
+    extras: notesObj.extras || {},
+    cutMultiple: notesObj.cutMultiple || ""
+  };
+
+  logEntries.push(entry);
+  localStorage.setItem("logEntries", JSON.stringify(logEntries));
+
+  if (currentIndex < addresses.length - 1) {
+    currentIndex++;
+    localStorage.setItem("routeIndex", currentIndex);
+    loadEntry();
+  } else {
+    showDownloadOptions();
+  }
+}
+
 
     function showDownloadOptions() {
-      routeCounter.textContent = '';
-      mainApp.innerHTML = `
+      document.getElementById("routeCounter").textContent = '';
+      document.getElementById("mainApp").innerHTML = `
         <h2>All addresses completed.</h2>
         <button onclick="downloadCSV()">⬇️ Download Log</button>
         <button onclick="shareLog()">📤 Share File</button>
@@ -301,28 +336,38 @@
 
     function formatDateForFilename() {
       const now = new Date();
-      return `${String(now.getMonth()+1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}-${String(now.getFullYear()).slice(-2)}`;
+      return `${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}-${String(now.getFullYear()).slice(-2)}`;
     }
 
-function downloadCSV() {
-  const headers = ["Address", "Homeowner", "Date", "Time", "Response Option", "Special Notes"];
-  const csvRows = [
-    headers.join(","),
-    ...logEntries.map(entry =>
-      [
-        `"${entry.address}"`,
-        `"${entry.homeowner}"`,
-        `"${entry.date}"`,
-        `"${entry.time}"`,
-        `"${entry.responseOption}"`,
-        `"${entry.specialNotes}"`
-      ].join(",")
-    )
+    function downloadCSV() {
+  const allExtras = [
+    "Weed Control", "Mulch", "Fertilizer", "Pest Control",
+    "Shrub Trimming", "Yard Clean Up"
   ];
 
+  const headers = ["Address", "Homeowner", "Date", "Time", "Response Option"]
+    .concat(allExtras, ["Cut Multiple"]);
+
+  const csvRows = [headers.join(",")];
+
+  logEntries.forEach(e => {
+    const extrasData = allExtras.map(extra => e.extras?.[extra] ? "Yes" : "No");
+    const row = [
+      `"${e.address}"`,
+      `"${e.homeowner}"`,
+      `"${e.date}"`,
+      `"${e.time}"`,
+      `"${e.responseOption}"`,
+      ...extrasData,
+      `"${e.cutMultiple}"`
+    ];
+    csvRows.push(row.join(","));
+  });
+
   const csv = csvRows.join("\n");
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement("a");
-  link.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  link.href = URL.createObjectURL(blob);
   link.download = `Route Log ${formatDateForFilename()}.csv`;
   document.body.appendChild(link);
   link.click();
@@ -330,35 +375,54 @@ function downloadCSV() {
   localStorage.clear();
 }
 
-function shareLog() {
-  const headers = ["Address", "Homeowner", "Date", "Time", "Response Option", "Special Notes"];
-  const csvRows = [
-    headers.join(","),
-    ...logEntries.map(entry =>
-      [
-        `"${entry.address}"`,
-        `"${entry.homeowner}"`,
-        `"${entry.date}"`,
-        `"${entry.time}"`,
-        `"${entry.responseOption}"`,
-        `"${entry.specialNotes}"`
-      ].join(",")
-    )
+
+    function shareLog() {
+  const allExtras = [
+    "Weed Control", "Mulch", "Fertilizer", "Pest Control",
+    "Shrub Trimming", "Yard Clean Up"
   ];
 
-  const csv = csvRows.join("\n");
-  const file = new File([csv], `Route Log ${formatDateForFilename()}.csv`, { type: "text/csv" });
+  const headers = ["Address", "Homeowner", "Date", "Time", "Response Option"]
+    .concat(allExtras, ["Cut Multiple"]);
 
-  if (navigator.share && navigator.canShare({ files: [file] })) {
-    navigator.share({ title: "Route Log", text: "Completed route log.", files: [file] })
-      .then(() => localStorage.clear())
-      .catch(err => alert("Share failed: " + err));
+  const csvRows = [headers.join(",")];
+
+  logEntries.forEach(e => {
+    const extrasData = allExtras.map(extra => e.extras?.[extra] ? "Yes" : "No");
+    const row = [
+      `"${e.address}"`,
+      `"${e.homeowner}"`,
+      `"${e.date}"`,
+      `"${e.time}"`,
+      `"${e.responseOption}"`,
+      ...extrasData,
+      `"${e.cutMultiple}"`
+    ];
+    csvRows.push(row.join(","));
+  });
+
+  const csv = csvRows.join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const file = new File([blob], `Route Log ${formatDateForFilename()}.csv`, { type: "text/csv" });
+
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    navigator.share({
+      title: "Route Log",
+      text: "Here is the completed route log.",
+      files: [file]
+    }).then(() => {
+      console.log("Share was successful.");
+      localStorage.clear();  // Clear all route data after share
+      window.location.href = "index.html";
+    }).catch(console.error);
   } else {
-    alert("Sharing not supported on this device.");
+    alert("Sharing is not supported on this browser. Try downloading the log instead.");
   }
 }
 
-    loadEntry();
+    document.getElementById("begin-button").addEventListener("click", () => {
+  loadEntry();
+});
   </script>
 
 </body>
