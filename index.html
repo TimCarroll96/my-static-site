@@ -121,16 +121,46 @@
 
     .checkbox-group {
       display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 15px;
-  text-align: left;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 15px;
+      text-align: center;
     }
 
-    .checkbox-group label {
-      font-weight: normal;
-      margin: 0;
-      width: 45%; /* Ensure they align in two columns */
+    .checkbox-card {
+      background: white;
+      border: 2px solid #ccc;
+      border-radius: 12px;
+      padding: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .checkbox-card input[type="checkbox"] {
+      display: none;
+    }
+
+    .checkbox-card label {
+      cursor: pointer;
+      font-weight: 600;
+      color: #333;
+      user-select: none;
+    }
+
+    .checkbox-card.checked {
+      background: #4CAF50;
+      color: white;
+      border-color: #4CAF50;
+      box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+    }
+
+    .checkbox-card.checked label {
+      color: white;
     }
 
     .input-error {
@@ -165,7 +195,6 @@
   </style>
 </head>
 <body>
-  
   <div class="container">
     <h1>Route Tracker</h1>
     <div id="routeCounter"></div>
@@ -182,12 +211,30 @@
     <div class="modal-content">
       <label>Any Extra Billing Info?</label>
       <div class="checkbox-group">
-        <label><input type="checkbox" value="Weed Control" /> Weed Control</label>
-        <label><input type="checkbox" value="Mulch" /> Mulch</label>
-        <label><input type="checkbox" value="Fertilizer" /> Fertilizer</label>
-        <label><input type="checkbox" value="Pest Control" /> Pest Control</label>
-        <label><input type="checkbox" value="Shrub Trimming" /> Shrub Trimming</label>
-        <label><input type="checkbox" value="Yard Clean Up" /> Yard Clean Up</label>
+        <div class="checkbox-card">
+          <input type="checkbox" id="extra1" value="Weed Control" />
+          <label for="extra1">Weed Control</label>
+        </div>
+        <div class="checkbox-card">
+          <input type="checkbox" id="extra2" value="Mulch" />
+          <label for="extra2">Mulch</label>
+        </div>
+        <div class="checkbox-card">
+          <input type="checkbox" id="extra3" value="Fertilizer" />
+          <label for="extra3">Fertilizer</label>
+        </div>
+        <div class="checkbox-card">
+          <input type="checkbox" id="extra4" value="Pest Control" />
+          <label for="extra4">Pest Control</label>
+        </div>
+        <div class="checkbox-card">
+          <input type="checkbox" id="extra5" value="Shrub Trimming" />
+          <label for="extra5">Shrub Trimming</label>
+        </div>
+        <div class="checkbox-card">
+          <input type="checkbox" id="extra6" value="Yard Clean Up" />
+          <label for="extra6">Yard Clean Up</label>
+        </div>
       </div>
       <label>What multiple of cut was provided?</label>
       <select id="standardCut">
@@ -244,6 +291,13 @@
     }
 
     function loadEntry() {
+      // Reset extras
+      document.querySelectorAll('#yesModal .checkbox-group input[type="checkbox"]').forEach(cb => {
+        cb.checked = false;
+        cb.closest('.checkbox-card')?.classList.remove('checked');
+      });
+      document.getElementById("standardCut").selectedIndex = 0;
+
       const entry = addresses[currentIndex];
       document.getElementById("routeCounter").textContent = `${currentIndex + 1} / ${addresses.length}`;
       document.getElementById("mainApp").innerHTML = `
@@ -271,22 +325,22 @@
       document.getElementById(modalId).style.display = "none";
     }
 
-  function submitYes() {
-  const checkboxes = document.querySelectorAll('#yesModal .checkbox-group input[type="checkbox"]');
-  const extras = {};
-  checkboxes.forEach(cb => {
-    extras[cb.value] = cb.checked;
-    cb.checked = false; // reset after submit
-  });
+    function submitYes() {
+      const checkboxes = document.querySelectorAll('#yesModal .checkbox-group input[type="checkbox"]');
+      const extras = {};
+      checkboxes.forEach(cb => {
+        extras[cb.value] = cb.checked;
+        cb.checked = false; // reset after submit
+        cb.closest('.checkbox-card')?.classList.remove('checked');
+      });
 
-  const cutMultiple = document.getElementById("standardCut");
-  const cutValue = cutMultiple.value;
-  cutMultiple.selectedIndex = 0; // reset after submit
+      const cutMultiple = document.getElementById("standardCut");
+      const cutValue = cutMultiple.value;
+      cutMultiple.selectedIndex = 0; // reset after submit
 
-  closeModal("yesModal");
-  saveLogEntry("Yes", { extras, cutMultiple: cutValue });
-}
-
+      closeModal("yesModal");
+      saveLogEntry("Yes", { extras, cutMultiple: cutValue });
+    }
 
     function submitNo() {
       const input = document.getElementById("skipReason");
@@ -301,29 +355,28 @@
     }
 
     function saveLogEntry(response, notesObj) {
-  const now = new Date();
-  const entry = {
-    address: addresses[currentIndex].address,
-    homeowner: addresses[currentIndex].homeowner,
-    date: now.toLocaleDateString(),
-    time: now.toLocaleTimeString(),
-    responseOption: response,
-    extras: notesObj.extras || {},
-    cutMultiple: notesObj.cutMultiple || ""
-  };
+      const now = new Date();
+      const entry = {
+        address: addresses[currentIndex].address,
+        homeowner: addresses[currentIndex].homeowner,
+        date: now.toLocaleDateString(),
+        time: now.toLocaleTimeString(),
+        responseOption: response,
+        extras: notesObj.extras || {},
+        cutMultiple: notesObj.cutMultiple || ""
+      };
 
-  logEntries.push(entry);
-  localStorage.setItem("logEntries", JSON.stringify(logEntries));
+      logEntries.push(entry);
+      localStorage.setItem("logEntries", JSON.stringify(logEntries));
 
-  if (currentIndex < addresses.length - 1) {
-    currentIndex++;
-    localStorage.setItem("routeIndex", currentIndex);
-    loadEntry();
-  } else {
-    showDownloadOptions();
-  }
-}
-
+      if (currentIndex < addresses.length - 1) {
+        currentIndex++;
+        localStorage.setItem("routeIndex", currentIndex);
+        loadEntry();
+      } else {
+        showDownloadOptions();
+      }
+    }
 
     function showDownloadOptions() {
       document.getElementById("routeCounter").textContent = '';
@@ -340,90 +393,96 @@
     }
 
     function downloadCSV() {
-  const allExtras = [
-    "Weed Control", "Mulch", "Fertilizer", "Pest Control",
-    "Shrub Trimming", "Yard Clean Up"
-  ];
+      const allExtras = [
+        "Weed Control", "Mulch", "Fertilizer", "Pest Control",
+        "Shrub Trimming", "Yard Clean Up"
+      ];
 
-  const headers = ["Address", "Homeowner", "Date", "Time", "Response Option"]
-    .concat(allExtras, ["Cut Multiple"]);
+      const headers = ["Address", "Homeowner", "Date", "Time", "Response Option"]
+        .concat(allExtras, ["Cut Multiple"]);
 
-  const csvRows = [headers.join(",")];
+      const csvRows = [headers.join(",")];
 
-  logEntries.forEach(e => {
-    const extrasData = allExtras.map(extra => e.extras?.[extra] ? "Yes" : "No");
-    const row = [
-      `"${e.address}"`,
-      `"${e.homeowner}"`,
-      `"${e.date}"`,
-      `"${e.time}"`,
-      `"${e.responseOption}"`,
-      ...extrasData,
-      `"${e.cutMultiple}"`
-    ];
-    csvRows.push(row.join(","));
-  });
+      logEntries.forEach(e => {
+        const extrasData = allExtras.map(extra => e.extras?.[extra] ? "Yes" : "No");
+        const row = [
+          `"${e.address}"`,
+          `"${e.homeowner}"`,
+          `"${e.date}"`,
+          `"${e.time}"`,
+          `"${e.responseOption}"`,
+          ...extrasData,
+          `"${e.cutMultiple}"`
+        ];
+        csvRows.push(row.join(","));
+      });
 
-  const csv = csvRows.join("\n");
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = `Route Log ${formatDateForFilename()}.csv`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  localStorage.clear();
-}
-
+      const csv = csvRows.join("\n");
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `Route Log ${formatDateForFilename()}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      localStorage.clear();
+    }
 
     function shareLog() {
-  const allExtras = [
-    "Weed Control", "Mulch", "Fertilizer", "Pest Control",
-    "Shrub Trimming", "Yard Clean Up"
-  ];
+      const allExtras = [
+        "Weed Control", "Mulch", "Fertilizer", "Pest Control",
+        "Shrub Trimming", "Yard Clean Up"
+      ];
 
-  const headers = ["Address", "Homeowner", "Date", "Time", "Response Option"]
-    .concat(allExtras, ["Cut Multiple"]);
+      const headers = ["Address", "Homeowner", "Date", "Time", "Response Option"]
+        .concat(allExtras, ["Cut Multiple"]);
 
-  const csvRows = [headers.join(",")];
+      const csvRows = [headers.join(",")];
 
-  logEntries.forEach(e => {
-    const extrasData = allExtras.map(extra => e.extras?.[extra] ? "Yes" : "No");
-    const row = [
-      `"${e.address}"`,
-      `"${e.homeowner}"`,
-      `"${e.date}"`,
-      `"${e.time}"`,
-      `"${e.responseOption}"`,
-      ...extrasData,
-      `"${e.cutMultiple}"`
-    ];
-    csvRows.push(row.join(","));
-  });
+      logEntries.forEach(e => {
+        const extrasData = allExtras.map(extra => e.extras?.[extra] ? "Yes" : "No");
+        const row = [
+          `"${e.address}"`,
+          `"${e.homeowner}"`,
+          `"${e.date}"`,
+          `"${e.time}"`,
+          `"${e.responseOption}"`,
+          ...extrasData,
+          `"${e.cutMultiple}"`
+        ];
+        csvRows.push(row.join(","));
+      });
 
-  const csv = csvRows.join("\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const file = new File([blob], `Route Log ${formatDateForFilename()}.csv`, { type: "text/csv" });
+      const csv = csvRows.join("\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const file = new File([blob], `Route Log ${formatDateForFilename()}.csv`, { type: "text/csv" });
 
-  if (navigator.canShare && navigator.canShare({ files: [file] })) {
-    navigator.share({
-      title: "Route Log",
-      text: "Here is the completed route log.",
-      files: [file]
-    }).then(() => {
-      console.log("Share was successful.");
-      localStorage.clear();  // Clear all route data after share
-      window.location.href = "index.html";
-    }).catch(console.error);
-  } else {
-    alert("Sharing is not supported on this browser. Try downloading the log instead.");
-  }
-}
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({
+          title: "Route Log",
+          text: "Here is the completed route log.",
+          files: [file]
+        }).then(() => {
+          console.log("Share was successful.");
+          localStorage.clear();
+          window.location.href = "index.html";
+        }).catch(console.error);
+      } else {
+        alert("Sharing is not supported on this browser. Try downloading the log instead.");
+      }
+    }
 
     document.getElementById("begin-button").addEventListener("click", () => {
-  loadEntry();
-});
-  </script>
+      loadEntry();
+    });
 
+    document.querySelectorAll('.checkbox-card').forEach(card => {
+      const checkbox = card.querySelector('input[type="checkbox"]');
+      card.addEventListener('click', () => {
+        checkbox.checked = !checkbox.checked;
+        card.classList.toggle('checked', checkbox.checked);
+      });
+    });
+  </script>
 </body>
 </html>
