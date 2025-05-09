@@ -91,10 +91,10 @@
     }
 
     .modal-content {
-      background-color: #fff;
+      background-color: #f9f9a0;
       margin: 20% auto;
       padding: 20px;
-      border: 1px solid #888;
+      border: 1px solid #f0e16b;
       width: 90%;
       max-width: 400px;
       border-radius: 10px;
@@ -343,40 +343,44 @@
     }
 
     function submitNo() {
-      const input = document.getElementById("skipReason");
-      const reason = input.value.trim();
-      if (!reason) {
-        input.classList.add('input-error');
-        document.getElementById("skipError").style.display = "block";
-        return;
-      }
-      closeModal("noModal");
-      saveLogEntry("No", reason);
-    }
+  const input = document.getElementById("skipReason");
+  const reason = input.value.trim();
+  if (!reason) {
+    input.classList.add('input-error');
+    document.getElementById("skipError").style.display = "block";
+    return;
+  }
+  closeModal("noModal");
+  saveLogEntry("No", { skipReason: reason });  // Pass skipReason here
+}
+
 
     function saveLogEntry(response, notesObj) {
-      const now = new Date();
-      const entry = {
-        address: addresses[currentIndex].address,
-        homeowner: addresses[currentIndex].homeowner,
-        date: now.toLocaleDateString(),
-        time: now.toLocaleTimeString(),
-        responseOption: response,
-        extras: notesObj.extras || {},
-        cutMultiple: notesObj.cutMultiple || ""
-      };
+  const now = new Date();
+  const entry = {
+    address: addresses[currentIndex].address,
+    homeowner: addresses[currentIndex].homeowner,
+    date: now.toLocaleDateString(),
+    time: now.toLocaleTimeString(),
+    responseOption: response,
+    extras: notesObj.extras || {},
+    cutMultiple: notesObj.cutMultiple || "",
+    skipReason: response === "No" ? notesObj.skipReason : ""  // Add skip reason if "No"
+  };
 
-      logEntries.push(entry);
-      localStorage.setItem("logEntries", JSON.stringify(logEntries));
+  logEntries.push(entry);
+  localStorage.setItem("logEntries", JSON.stringify(logEntries));
 
-      if (currentIndex < addresses.length - 1) {
-        currentIndex++;
-        localStorage.setItem("routeIndex", currentIndex);
-        loadEntry();
-      } else {
-        showDownloadOptions();
-      }
-    }
+  if (currentIndex < addresses.length - 1) {
+    currentIndex++;
+    localStorage.setItem("routeIndex", currentIndex);
+    loadEntry();
+  } else {
+    showDownloadOptions();
+  }
+}
+
+
 
     function showDownloadOptions() {
       document.getElementById("routeCounter").textContent = '';
@@ -393,84 +397,88 @@
     }
 
     function downloadCSV() {
-      const allExtras = [
-        "Weed Control", "Mulch", "Fertilizer", "Pest Control",
-        "Shrub Trimming", "Yard Clean Up"
-      ];
+  const allExtras = [
+    "Weed Control", "Mulch", "Fertilizer", "Pest Control",
+    "Shrub Trimming", "Yard Clean Up"
+  ];
 
-      const headers = ["Address", "Homeowner", "Date", "Time", "Response Option"]
-        .concat(allExtras, ["Cut Multiple"]);
+  const headers = ["Address", "Homeowner", "Date", "Time", "Response Option", "Skip Reason"]
+    .concat(allExtras, ["Cut Multiple"]);
 
-      const csvRows = [headers.join(",")];
+  const csvRows = [headers.join(",")];
 
-      logEntries.forEach(e => {
-        const extrasData = allExtras.map(extra => e.extras?.[extra] ? "Yes" : "No");
-        const row = [
-          `"${e.address}"`,
-          `"${e.homeowner}"`,
-          `"${e.date}"`,
-          `"${e.time}"`,
-          `"${e.responseOption}"`,
-          ...extrasData,
-          `"${e.cutMultiple}"`
-        ];
-        csvRows.push(row.join(","));
-      });
+  logEntries.forEach(e => {
+    const extrasData = allExtras.map(extra => e.extras?.[extra] ? "Yes" : "No");
+    const row = [
+      `"${e.address}"`,
+      `"${e.homeowner}"`,
+      `"${e.date}"`,
+      `"${e.time}"`,
+      `"${e.responseOption}"`,
+      `"${e.skipReason}"`,  // Include skip reason here
+      ...extrasData,
+      `"${e.cutMultiple}"`
+    ];
+    csvRows.push(row.join(","));
+  });
 
-      const csv = csvRows.join("\n");
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = `Route Log ${formatDateForFilename()}.csv`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      localStorage.clear();
-    }
+  const csv = csvRows.join("\n");
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = `Route Log ${formatDateForFilename()}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  localStorage.clear();
+}
+
 
     function shareLog() {
-      const allExtras = [
-        "Weed Control", "Mulch", "Fertilizer", "Pest Control",
-        "Shrub Trimming", "Yard Clean Up"
-      ];
+  const allExtras = [
+    "Weed Control", "Mulch", "Fertilizer", "Pest Control",
+    "Shrub Trimming", "Yard Clean Up"
+  ];
 
-      const headers = ["Address", "Homeowner", "Date", "Time", "Response Option"]
-        .concat(allExtras, ["Cut Multiple"]);
+  const headers = ["Address", "Homeowner", "Date", "Time", "Response Option", "Skip Reason"]
+    .concat(allExtras, ["Cut Multiple"]);
 
-      const csvRows = [headers.join(",")];
+  const csvRows = [headers.join(",")];
 
-      logEntries.forEach(e => {
-        const extrasData = allExtras.map(extra => e.extras?.[extra] ? "Yes" : "No");
-        const row = [
-          `"${e.address}"`,
-          `"${e.homeowner}"`,
-          `"${e.date}"`,
-          `"${e.time}"`,
-          `"${e.responseOption}"`,
-          ...extrasData,
-          `"${e.cutMultiple}"`
-        ];
-        csvRows.push(row.join(","));
-      });
+  logEntries.forEach(e => {
+    const extrasData = allExtras.map(extra => e.extras?.[extra] ? "Yes" : "No");
+    const row = [
+      `"${e.address}"`,
+      `"${e.homeowner}"`,
+      `"${e.date}"`,
+      `"${e.time}"`,
+      `"${e.responseOption}"`,
+      `"${e.skipReason}"`,  // Include skip reason here
+      ...extrasData,
+      `"${e.cutMultiple}"`
+    ];
+    csvRows.push(row.join(","));
+  });
 
-      const csv = csvRows.join("\n");
-      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-      const file = new File([blob], `Route Log ${formatDateForFilename()}.csv`, { type: "text/csv" });
+  const csv = csvRows.join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const file = new File([blob], `Route Log ${formatDateForFilename()}.csv`, { type: "text/csv" });
 
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        navigator.share({
-          title: "Route Log",
-          text: "Here is the completed route log.",
-          files: [file]
-        }).then(() => {
-          console.log("Share was successful.");
-          localStorage.clear();
-          window.location.href = "index.html";
-        }).catch(console.error);
-      } else {
-        alert("Sharing is not supported on this browser. Try downloading the log instead.");
-      }
-    }
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    navigator.share({
+      title: "Route Log",
+      text: "Here is the completed route log.",
+      files: [file]
+    }).then(() => {
+      console.log("Share was successful.");
+      localStorage.clear();
+      window.location.href = "index.html";
+    }).catch(console.error);
+  } else {
+    alert("Sharing is not supported on this browser. Try downloading the log instead.");
+  }
+}
+
 
     document.getElementById("begin-button").addEventListener("click", () => {
       loadEntry();
