@@ -9,6 +9,14 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&family=Lato:wght@300&display=swap" rel="stylesheet">
   
   <style>
+    #done-button {
+  position: fixed;
+  bottom: 20px; /* distance from bottom */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000; /* ensure it stays above other elements */
+  width: auto; /* you can keep or adjust based on preference */
+}
     #yesModal .checkbox-card {
     font-size: 1.25rem;
     font-weight: 700;
