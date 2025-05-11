@@ -7,17 +7,21 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&family=Lato:wght@300&display=swap" rel="stylesheet">
+  
   <style>
+    #yesModal .checkbox-card {
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
     html, body {
       font-family: 'Lato', sans-serif;
       background: repeating-linear-gradient(
-  to bottom,
-  #a8e063 0%,
-  #f4e1b1 50%,
-  #a8e063 100%
-);
-background-attachment: fixed;
-
+        to bottom,
+        #a8e063 0%,
+        #f4e1b1 50%,
+        #a8e063 100%
+      );
+      background-attachment: fixed;
       color: #333;
       margin: 0;
       padding: 0;
@@ -117,16 +121,17 @@ background-attachment: fixed;
       align-items: center;
     }
     .modal-buttons button {
-      padding: 12px 20px;
-      font-size: 16px;
+      padding: 16px 24px;
+      font-size: 20px;
+      font-weight: 700;
       background: #4CAF50;
       color: white;
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
       cursor: pointer;
-      margin: 8px 0;
+      margin: 10px 0;
       width: 90%;
-      max-width: 300px;
+      max-width: 320px;
       transition: transform 0.15s ease;
     }
     .modal-buttons button:active {
@@ -136,7 +141,8 @@ background-attachment: fixed;
       padding: 12px 20px;
       background: #4CAF50;
       color: white;
-      font-size: 16px;
+      font-size: 20px;
+      font-weight: 700;
       border: none;
       border-radius: 8px;
       cursor: pointer;
@@ -169,6 +175,27 @@ background-attachment: fixed;
     .button-group button {
       width: 100%;
     }
+    .done-button {
+  position: relative; /* Keeps the button in its original position on other pages */
+  padding: 14px 20px;
+  font-size: 24px;
+  font-weight: bold;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Sticky button style for the Records page */
+.mainScreen .done-button {
+  position: sticky;
+  bottom: 20px; /* Sticks to the bottom of the screen */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+}
   </style>
 </head>
 <body>
@@ -181,6 +208,7 @@ background-attachment: fixed;
 
   <div id="mainScreen" class="container" style="display: none;">
     <h1>Today's Route</h1>
+    
     <div id="cardContainer"></div>
     <button id="done-button" class="button" onclick="showSummaryScreen()">Done cutting for day</button>
   </div>
@@ -224,166 +252,217 @@ background-attachment: fixed;
   </div>
 
   <script>
-    const addresses = JSON.parse(localStorage.getItem('routeTracker_addresses')) || [
-      { address: "30396 Lakeland Blvd, Wickliffe, OH 44092", homeowner: "Walt - OMCO" },
-      { address: "1135 Worden Road, Wickliffe, OH 44092", homeowner: "Chas Svec - Worden" },
-      { address: "30851 Harrison Rd, Wickliffe, OH 44092", homeowner: "Mary Bilinski" },
-      { address: "738 Sterling Rd, Wickliffe, OH 44092", homeowner: "Adam Burr" },
-      { address: "739 Sterling Rd, Wickliffe, OH 44092", homeowner: "Don Testa" },
-      { address: "2142 Rockefeller Rd, Wickliffe, OH 44092", homeowner: "Deborah Foster" },
-      { address: "1695 Empire Rd, Wickliffe, OH 44092", homeowner: "Pat Delaney" },
-      { address: "1813 East 290th St, Wickliffe, OH 44092", homeowner: "Linda/Bill Clemens" },
-      { address: "35400 Vine St, Eastlake, OH 44095", homeowner: "Two Bucks - Eastlake" },
-      { address: "7406 Jeremy Ave, Mentor, OH 44060", homeowner: "Josh Mason" },
-      { address: "6484 Elmwood Rd, Mentor, OH 44060", homeowner: "Kristen Mason" },
-      { address: "7138 Connie Dr, Mentor, OH 44060", homeowner: "Johnny Pankuch" },
-      { address: "7321 Raccoon Hill Dr, Kirtland, OH 44094", homeowner: "Ashish" },
-      { address: "2605 Timberline Dr, Willoughby Hills, OH 44094", homeowner: "Laurie Feltham" },
-      { address: "10730 Pine Valley Cir, Concord Township, OH 44077", homeowner: "Dan Cash" },
-      { address: "13500 Sperry Rd, Novelty, OH 44072", homeowner: "Caroline Williams" }
-    ];
+  // Add this function to show or hide the "Done for the day" button based on the screen
+  function toggleDoneButton() {
+    const doneButton = document.getElementById('doneForTheDayButton');
+    const startScreen = document.getElementById('startScreen');
+    const summaryScreen = document.getElementById('summaryScreen');
 
-    const logEntries = JSON.parse(localStorage.getItem('routeTracker_logEntries')) || [];
-    const container = document.getElementById("cardContainer");
-    let selectedExtras = [];
-    let selectedAddressIndex = null;
-
-    function vibrateFeedback() {
-      if (navigator.vibrate) navigator.vibrate(10);
+    // Hide the button if we're on the start page or the summary page
+    if (startScreen.style.display === 'block' || summaryScreen.style.display === 'block') {
+      doneButton.style.display = 'none';  // Hide on Start Route and Summary Index pages
+    } else {
+      doneButton.style.display = 'block';  // Show on the main route tracking screen
     }
+  }
 
-    function saveState() {
-      localStorage.setItem('routeTracker_addresses', JSON.stringify(addresses));
-      localStorage.setItem('routeTracker_logEntries', JSON.stringify(logEntries));
+  const addresses = JSON.parse(localStorage.getItem('routeTracker_addresses')) || [
+    { address: "30396 Lakeland Blvd, Wickliffe, OH 44092", homeowner: "Walt - OMCO" },
+    { address: "1135 Worden Road, Wickliffe, OH 44092", homeowner: "Chas Svec - Worden" },
+    { address: "30851 Harrison Rd, Wickliffe, OH 44092", homeowner: "Mary Bilinski" },
+    { address: "738 Sterling Rd, Wickliffe, OH 44092", homeowner: "Adam Burr" },
+    { address: "739 Sterling Rd, Wickliffe, OH 44092", homeowner: "Don Testa" },
+    { address: "2142 Rockefeller Rd, Wickliffe, OH 44092", homeowner: "Deborah Foster" },
+    { address: "1695 Empire Rd, Wickliffe, OH 44092", homeowner: "Pat Delaney" },
+    { address: "1813 East 290th St, Wickliffe, OH 44092", homeowner: "Linda/Bill Clemens" },
+    { address: "35400 Vine St, Eastlake, OH 44095", homeowner: "Two Bucks - Eastlake" },
+    { address: "7406 Jeremy Ave, Mentor, OH 44060", homeowner: "Josh Mason" },
+    { address: "6484 Elmwood Rd, Mentor, OH 44060", homeowner: "Kristen Mason" },
+    { address: "7138 Connie Dr, Mentor, OH 44060", homeowner: "Johnny Pankuch" },
+    { address: "7321 Raccoon Hill Dr, Kirtland, OH 44094", homeowner: "Ashish" },
+    { address: "2605 Timberline Dr, Willoughby Hills, OH 44094", homeowner: "Laurie Feltham" },
+    { address: "10730 Pine Valley Cir, Concord Township, OH 44077", homeowner: "Dan Cash" },
+    { address: "13500 Sperry Rd, Novelty, OH 44072", homeowner: "Caroline Williams" }
+  ];
+
+  const logEntries = JSON.parse(localStorage.getItem('routeTracker_logEntries')) || [];
+  const container = document.getElementById("cardContainer");
+  let selectedExtras = [];
+  let selectedAddressIndex = null;
+
+  function vibrateFeedback() {
+    if (navigator.vibrate) navigator.vibrate(10);
+  }
+
+  function saveState() {
+    localStorage.setItem('routeTracker_addresses', JSON.stringify(addresses));
+    localStorage.setItem('routeTracker_logEntries', JSON.stringify(logEntries));
+  }
+
+  function renderCards() {
+    container.innerHTML = "";
+    addresses.forEach((entry, index) => {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `<h3>${entry.homeowner}</h3><p>${entry.address}</p>`;
+      card.onclick = () => openYesModal(index);
+      container.appendChild(card);
+    });
+  }
+
+  function openYesModal(index) {
+    selectedAddressIndex = index;
+    const modal = document.getElementById("yesModal");
+    modal.classList.add("active");
+
+    selectedExtras = [];
+    const checkboxCards = document.querySelectorAll(".checkbox-card");
+    checkboxCards.forEach(card => card.classList.remove("selected"));
+    document.getElementById("standardCut").value = "1.0";
+  }
+
+  function selectExtra(service) {
+    vibrateFeedback();
+    const card = document.getElementById("extra" + service);
+    if (card.classList.contains("selected")) {
+      card.classList.remove("selected");
+      selectedExtras = selectedExtras.filter(item => item !== service);
+    } else {
+      card.classList.add("selected");
+      selectedExtras.push(service);
     }
+  }
 
-    function renderCards() {
-      container.innerHTML = "";
-      addresses.forEach((entry, index) => {
-        const card = document.createElement("div");
-        card.className = "card";
-        card.innerHTML = `<h3>${entry.homeowner}</h3><p>${entry.address}</p>`;
-        card.onclick = () => openYesModal(index);
-        container.appendChild(card);
-      });
+  function submitYes() {
+    vibrateFeedback();
+    const cutMultiple = document.getElementById("standardCut").value;
+    const log = {
+      ...addresses[selectedAddressIndex],
+      extras: selectedExtras,
+      cutMultiple,
+      timestamp: new Date().toLocaleString()
+    };
+
+    logEntries.push(log);
+    addresses.splice(selectedAddressIndex, 1);
+    closeModal('yesModal');
+    saveState();
+    renderCards();
+
+    if (addresses.length === 0) {
+      showSummaryScreen();
     }
+  }
 
-    function openYesModal(index) {
-      selectedAddressIndex = index;
-      const modal = document.getElementById("yesModal");
-      modal.classList.add("active");
+  function closeModal(modalId) {
+    document.getElementById(modalId).classList.remove("active");
+  }
 
-      selectedExtras = [];
-      const checkboxCards = document.querySelectorAll(".checkbox-card");
-      checkboxCards.forEach(card => card.classList.remove("selected"));
-      document.getElementById("standardCut").value = "1.0";
-    }
+  function startDay() {
+    vibrateFeedback();
+    document.getElementById('startScreen').style.display = 'none';
+    document.getElementById('mainScreen').style.display = 'block';
+    renderCards();
+    toggleDoneButton(); // Hide the button when starting the day
+  }
 
-    function selectExtra(service) {
+  function showSummaryScreen() {
+    const confirmation = window.confirm("Are you sure you want to mark today as complete? This will save all your progress.");
+    if (confirmation) {
       vibrateFeedback();
-      const card = document.getElementById("extra" + service);
-      if (card.classList.contains("selected")) {
-        card.classList.remove("selected");
-        selectedExtras = selectedExtras.filter(item => item !== service);
-      } else {
-        card.classList.add("selected");
-        selectedExtras.push(service);
-      }
+      document.getElementById('mainScreen').style.display = 'none';
+      document.getElementById('summaryScreen').style.display = 'block';
+      document.getElementById('returnButton').style.display = 'block';
+      toggleDoneButton(); // Hide the button on the Summary screen
     }
+  }
 
-    function submitYes() {
+  function returnToBeginning() {
+    const confirmation = window.confirm("Are you sure you want to reset everything and start fresh?");
+    if (confirmation) {
       vibrateFeedback();
-      const cutMultiple = document.getElementById("standardCut").value;
-      const log = {
-        ...addresses[selectedAddressIndex],
-        extras: selectedExtras,
-        cutMultiple,
-        timestamp: new Date().toLocaleString()
-      };
-
-      logEntries.push(log);
-      addresses.splice(selectedAddressIndex, 1);
-      closeModal('yesModal');
-      saveState();
-      renderCards();
-
-      if (addresses.length === 0) {
-        showSummaryScreen();
-      }
+      localStorage.clear();
+      window.location.reload();
     }
+    toggleDoneButton(); // Show the button after returning to the start
+  }
 
-    function closeModal(modalId) {
-      document.getElementById(modalId).classList.remove("active");
+  // Function to share the log
+  function shareLog() {
+    vibrateFeedback();
+    const csv = convertToCSV(logEntries);
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const fileName = `Route Log ${formatDateForFilename()}.csv`;
+
+    if (navigator.canShare && navigator.canShare({ files: [new File([blob], fileName, { type: "text/csv" })] })) {
+      navigator.share({
+        title: 'Route Log',
+        files: [new File([blob], fileName, { type: "text/csv" })]
+      }).catch(console.error);
+    } else {
+      alert('Sharing not supported on your browser.');
     }
+  }
 
-    function startDay() {
-      vibrateFeedback();
-      document.getElementById('startScreen').style.display = 'none';
-      document.getElementById('mainScreen').style.display = 'block';
-      renderCards();
-    }
+  // Function to download the log
+  function downloadLog() {
+    vibrateFeedback();
+    const csv = convertToCSV(logEntries);
+    const fileName = `Route Log ${formatDateForFilename()}.csv`;
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
 
-    function showSummaryScreen() {
-      const confirmation = window.confirm("Are you sure you want to mark today as complete? This will save all your progress.");
-      if (confirmation) {
-        vibrateFeedback();
-        document.getElementById('mainScreen').style.display = 'none';
-        document.getElementById('summaryScreen').style.display = 'block';
-        document.getElementById('returnButton').style.display = 'block';
-      }
-    }
+  function formatDateForFilename() {
+    const now = new Date();
+    return now.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' }).replace(/\//g, '-');
+  }
 
-    function returnToBeginning() {
-      const confirmation = window.confirm("Are you sure you want to reset everything and start fresh?");
-      if (confirmation) {
-        vibrateFeedback();
-        localStorage.clear();
-        window.location.reload();
-      }
-    }
+  // Convert the log entries into CSV format
+  function convertToCSV(objArray) {
+  if (!objArray.length) return '';
 
-    function shareLog() {
-      vibrateFeedback();
-      const csv = convertToCSV(logEntries);
-      const blob = new Blob([csv], { type: "text/csv" });
-      const url = URL.createObjectURL(blob);
-      const fileName = `Route Log ${formatDateForFilename()}.csv`;
+  // Define the primary keys (e.g., homeowner, address, etc.)
+  const primaryKeys = Object.keys(objArray[0]).filter(key => key !== 'extras'); // Exclude 'extras' from the primary keys
 
-      if (navigator.canShare && navigator.canShare({ files: [new File([blob], fileName, { type: "text/csv" })] })) {
-        navigator.share({
-          title: 'Route Log',
-          files: [new File([blob], fileName, { type: "text/csv" })]
-        }).catch(console.error);
-      } else {
-        alert('Sharing not supported on your browser.');
-      }
-    }
+  // Define the extra services (these should be the last columns in the CSV)
+  const extras = ['Weed Control', 'Mulch', 'Fertilizer', 'Pest Control', 'Shrub Trimming', 'Yard Clean Up'];
 
-    function downloadLog() {
-      vibrateFeedback();
-      const csv = convertToCSV(logEntries);
-      const fileName = `Route Log ${formatDateForFilename()}.csv`;
-      const blob = new Blob([csv], { type: "text/csv" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    }
+  // Create the header row, first the primary fields and then the extras
+  const allKeys = [...primaryKeys, ...extras];
 
-    function formatDateForFilename() {
-      const now = new Date();
-      return now.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' }).replace(/\//g, '-');
-    }
+  // Now, create the rows
+  const rows = objArray.map(obj => {
+    // Create an array of the primary fields for the current row
+    const primaryValues = primaryKeys.map(k => {
+      return `"${String(obj[k] || '').replace(/"/g, '""')}"`; // Ensure proper CSV escaping
+    });
 
-    function convertToCSV(objArray) {
-      if (!objArray.length) return '';
-      const keys = Object.keys(objArray[0]);
-      const rows = objArray.map(obj => keys.map(k => `"${String(obj[k]).replace(/"/g, '""')}"`).join(','));
-      return [keys.join(','), ...rows].join('\n');
-    }
-  </script>
+    // Now add the values for the extra fields (Weed Control, Mulch, etc.)
+    const extraValues = extras.map(extra => {
+      // If the extras array contains the service, mark it as "Yes", otherwise "No"
+      return obj.extras.includes(extra) ? 'Yes' : 'No';
+    });
+
+    // Combine the primary fields and the extra fields into a single row
+    return [...primaryValues, ...extraValues].join(',');
+  });
+
+  // Combine the header row with the data rows and join them with newlines
+  return [allKeys.join(','), ...rows].join('\n');
+}
+
+
+</script>
+
+   
+
 </body>
 </html>
