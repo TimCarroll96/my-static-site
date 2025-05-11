@@ -295,9 +295,15 @@
   }
 
   function saveState() {
-    localStorage.setItem('routeTracker_addresses', JSON.stringify(addresses));
-    localStorage.setItem('routeTracker_logEntries', JSON.stringify(logEntries));
-  }
+  localStorage.setItem('routeTracker_addresses', JSON.stringify(addresses));
+  localStorage.setItem('routeTracker_logEntries', JSON.stringify(logEntries));
+  localStorage.setItem('routeTracker_currentScreen', getCurrentScreen());
+}
+function getCurrentScreen() {
+  if (document.getElementById('mainScreen').style.display === 'block') return 'main';
+  if (document.getElementById('summaryScreen').style.display === 'block') return 'summary';
+  return 'start';
+}
 
   function renderCards() {
     container.innerHTML = "";
@@ -459,6 +465,20 @@
   return [allKeys.join(','), ...rows].join('\n');
 }
 
+window.addEventListener('DOMContentLoaded', () => {
+  const savedScreen = localStorage.getItem('routeTracker_currentScreen');
+
+  if (savedScreen === 'main' && addresses.length > 0) {
+    document.getElementById('startScreen').style.display = 'none';
+    document.getElementById('mainScreen').style.display = 'block';
+    renderCards();
+  } else if (savedScreen === 'summary' || addresses.length === 0) {
+    document.getElementById('startScreen').style.display = 'none';
+    document.getElementById('summaryScreen').style.display = 'block';
+  } else {
+    document.getElementById('startScreen').style.display = 'block';
+  }
+});
 
 </script>
 
